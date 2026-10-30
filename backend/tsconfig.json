@@ -20,11 +20,13 @@
     "*.d.ts",
     "config/**/*.ts",
     "controllers/**/*.ts",
+    "errors/**/*.ts",
     "middleware/**/*.ts",
     "routes/**/*.ts",
     "services/**/*.ts",
     "repositories/**/*.ts",
     "utils/**/*.ts",
+    "validators/**/*.ts",
     "types/**/*.ts",
     "seeds/**/*.ts"
     ],

@@ -12,7 +12,9 @@ import type { Server as HttpServer } from "node:http";
 import { dbConnection } from "./db/connection.js";
 
 import authRouter from "../routes/auth.js";
+import usuarioRouter from "../routes/usuarios.js";
 import categorieRouter from "../routes/categorias.js";
+
 
 class Server {
     private app: Application;
@@ -21,6 +23,7 @@ class Server {
 
     private paths = {
         auth: "/api/auth",
+        usuarios: '/api/usuarios',
         categorias: '/api/categorias',
         
     };
@@ -55,6 +58,7 @@ class Server {
 
     private routes(): void {
         this.app.use(this.paths.auth, authRouter);
+        this.app.use(this.paths.usuarios, usuarioRouter);
         this.app.use(this.paths.categorias, categorieRouter);
         
 
