@@ -12,7 +12,7 @@ import type { Server as HttpServer } from "node:http";
 import { dbConnection } from "./db/connection.js";
 
 import authRouter from "../routes/auth.js";
-
+import categorieRouter from "../routes/categorias.js";
 
 class Server {
     private app: Application;
@@ -21,6 +21,7 @@ class Server {
 
     private paths = {
         auth: "/api/auth",
+        categorias: '/api/categorias',
         
     };
 
@@ -54,6 +55,7 @@ class Server {
 
     private routes(): void {
         this.app.use(this.paths.auth, authRouter);
+        this.app.use(this.paths.categorias, categorieRouter);
         
 
         // Middleware 404: debe ir después de todas las rutas.
