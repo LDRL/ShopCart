@@ -126,12 +126,12 @@ const postUsuario = async (
         return;
     }
 
-    const { email, nombre, apellido, contraseña, id_rol } = req.body as {
+    const { email, nombre, apellido, contraseña, IDRol } = req.body as {
         email: string;
         nombre: string;
         apellido: string;
         contraseña: string;
-        id_rol: number;
+        IDRol: number;
     };
 
     try {
@@ -140,7 +140,7 @@ const postUsuario = async (
             apellido,
             correo: email,
             contraseña,
-            idRol: Number(id_rol),
+            IDRol: Number(IDRol),
         });
 
         res.status(201).json({
@@ -189,11 +189,11 @@ const putUsuario = async (
         return;
     }
 
-    const { email, nombre, apellido, id_rol } = req.body as {
+    const { email, nombre, apellido, IDRol } = req.body as {
         email: string;
         nombre: string;
         apellido: string;
-        id_rol: number;
+        IDRol: number;
     };
 
     try {
@@ -201,7 +201,7 @@ const putUsuario = async (
             correo: email,
             nombre,
             apellido,
-            idRol: Number(id_rol),
+            IDRol: Number(IDRol),
         });
 
         res.status(200).json({

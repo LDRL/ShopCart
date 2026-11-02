@@ -8,7 +8,7 @@ export interface ActualizarUsuarioInput {
     correo: string;
     nombre: string;
     apellido: string;
-    idRol: number;
+    IDRol: number;
 }
 
 export const listarUsuarios = async (
@@ -46,7 +46,7 @@ export const crearUsuario = async (
     apellido: string,
     correo: string,
     passwordHash: string,
-    idRol: number
+    IDRol: number
 ): Promise<Record<string, unknown> | null> => {
     const pool = await dbConnect();
 
@@ -57,7 +57,7 @@ export const crearUsuario = async (
             .input("P_APELLIDO", sql.VarChar(50), apellido.trim())
             .input("P_CORREO", sql.VarChar(150), correo.trim())
             .input("P_PASSWORD", sql.VarChar(255), passwordHash)
-            .input("P_ID_ROL", sql.Int, idRol)
+            .input("P_ID_ROL", sql.Int, IDRol)
             .execute("dbo.SP_Usuarios_CrearUsuario");
 
         return result.recordset?.[0] ?? null;
@@ -97,7 +97,7 @@ export const actualizarUsuario = async (
             .input("P_CORREO", sql.VarChar(150), input.correo.trim())
             .input("P_NOMBRE", sql.VarChar(80), input.nombre.trim())
             .input("P_APELLIDO", sql.VarChar(80), input.apellido.trim())
-            .input("P_ID_ROL", sql.Int, input.idRol)
+            .input("P_ID_ROL", sql.Int, input.IDRol)
             .input("P_ID_USUARIO", sql.Int, id)
             .execute("dbo.SP_Usuarios_ActualizarUsuario");
 

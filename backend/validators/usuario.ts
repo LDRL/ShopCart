@@ -46,7 +46,7 @@ const reglaContrasena = () =>
         );
 
 const reglaRol = () =>
-    body("id_rol")
+    body("IDRol")
         .isInt({ min: 1 })
         .withMessage("El rol es inválido")
         .toInt();

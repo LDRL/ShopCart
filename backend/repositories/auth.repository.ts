@@ -37,7 +37,7 @@ export const buscarUsuarioPorCorreo = async (
 
 
 export const actualizarPassword = async (
-    idUsuario: number,
+    IDUsuario: number,
     passwordHash: string
 ): Promise<void> => {
     const pool = await dbConnect();
@@ -52,7 +52,7 @@ export const actualizarPassword = async (
         .input(
             "P_ID_USUARIO",
             sql.Int,
-            idUsuario
+            IDUsuario
         )
         .execute("dbo.SP_Usuarios_ActualizarContraseña");
 };

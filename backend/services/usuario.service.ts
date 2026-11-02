@@ -11,8 +11,8 @@ import { hashPassword } from "../utils/auth.js";
 
 const ROLES_PERMITIDOS = [1, 2];
 
-const validarRolPermitido = (idRol: number): void => {
-    if (!ROLES_PERMITIDOS.includes(idRol)) {
+const validarRolPermitido = (IDRol: number): void => {
+    if (!ROLES_PERMITIDOS.includes(IDRol)) {
         throw new DomainError(
             "USUARIO_ROL_INVALIDO",
             "El rol debe ser Administrador u Operador"
@@ -25,7 +25,7 @@ export interface CrearUsuarioInput {
     apellido: string;
     correo: string;
     contraseña: string;
-    idRol: number;
+    IDRol: number;
 }
 
 export const obtenerUsuarios = async (
@@ -73,7 +73,7 @@ export const obtenerUsuario = async (id: number) => {
 };
 
 export const crearUsuarioService = async (input: CrearUsuarioInput) => {
-    validarRolPermitido(input.idRol);
+    validarRolPermitido(input.IDRol);
 
     const passwordHash = await hashPassword(input.contraseña);
     return crearUsuario(
@@ -81,7 +81,7 @@ export const crearUsuarioService = async (input: CrearUsuarioInput) => {
         input.apellido,
         input.correo,
         passwordHash,
-        input.idRol
+        input.IDRol
     );
 };
 
@@ -89,7 +89,7 @@ export const actualizarUsuarioService = async (
     id: number,
     input: ActualizarUsuarioInput
 ) => {
-    validarRolPermitido(input.idRol);
+    validarRolPermitido(input.IDRol);
     return actualizarUsuario(id, input);
 };
 

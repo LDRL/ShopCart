@@ -30,7 +30,7 @@ export const iniciarSesion = async ( correo: string, contraseña: string
     return { token };
 };
 
-export const cambiarPassword = async ( idUsuario: number, contraseña: string ): Promise<void> => {
+export const cambiarPassword = async ( IDUsuario: number, contraseña: string ): Promise<void> => {
     const passwordHash = await hashPassword(contraseña);
-    await actualizarPassword(idUsuario, passwordHash);
+    await actualizarPassword(IDUsuario, passwordHash);
 };

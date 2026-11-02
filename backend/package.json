@@ -8,7 +8,7 @@
     "start": "node dist/app.js",
     "watch": "node --watch dist/app.js",
     "dev": "tsx watch app.ts",
-    "seed": "tsx seeds/seed.js"
+    "seed": "tsx seeds/seed.ts"
   },
   "keywords": [],
   "author": "",

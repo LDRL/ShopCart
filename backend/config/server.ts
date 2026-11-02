@@ -14,6 +14,11 @@ import { dbConnection } from "./db/connection.js";
 import authRouter from "../routes/auth.js";
 import usuarioRouter from "../routes/usuarios.js";
 import categorieRouter from "../routes/categorias.js";
+import productosRouter from "../routes/productos.js";
+import generosRouter from "../routes/generos.js";
+import atributosRouter from "../routes/atributos.js";
+import valoresAtributosRouter from "../routes/valoresAtributos.js";
+import categoriasAtributosRouter from "../routes/categoriasAtributos.js";
 
 
 class Server {
@@ -25,6 +30,11 @@ class Server {
         auth: "/api/auth",
         usuarios: '/api/usuarios',
         categorias: '/api/categorias',
+        productos: '/api/productos',
+        generos: '/api/generos',
+        atributos: '/api/atributos',
+        valoresAtributos: '/api/valores-atributos',
+        categoriasAtributos: '/api/categorias-atributos',
         
     };
 
@@ -60,6 +70,11 @@ class Server {
         this.app.use(this.paths.auth, authRouter);
         this.app.use(this.paths.usuarios, usuarioRouter);
         this.app.use(this.paths.categorias, categorieRouter);
+        this.app.use(this.paths.productos, productosRouter);
+        this.app.use(this.paths.generos, generosRouter);
+        this.app.use(this.paths.atributos, atributosRouter);
+        this.app.use(this.paths.valoresAtributos, valoresAtributosRouter);
+        this.app.use(this.paths.categoriasAtributos, categoriasAtributosRouter);
         
 
         // Middleware 404: debe ir después de todas las rutas.
