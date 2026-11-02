@@ -4,7 +4,7 @@ import { Router } from "express";
 import { body } from "express-validator";
 
 import { handleInputErrors } from "../middleware/validacion.js";
-import { login, resetPassword, user } from "../controllers/auth.js";
+import { login, refresh, logout, logoutAll, resetPassword, user } from "../controllers/auth.js";
 import { authenticate } from "../middleware/auth.js";
 
 const router = Router();
@@ -15,6 +15,13 @@ router.post('/login',
     handleInputErrors,
     login)
 
+router.post('/refresh', refresh)
+
+router.post('/logout', logout)
+
+router.post('/logout-all',
+    authenticate,
+    logoutAll)
 
 router.put('/reset-password/:id',
     body('contraseña').isLength({min:8}).withMessage('La contraseña es muy corta, debe contener 8 caracteres minimo'),

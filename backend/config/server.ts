@@ -10,6 +10,7 @@ import path from "node:path";
 import type { Server as HttpServer } from "node:http";
 
 import { dbConnection } from "./db/connection.js";
+import { validarEntorno } from "./validateEnv.js";
 
 import authRouter from "../routes/auth.js";
 import usuarioRouter from "../routes/usuarios.js";
@@ -42,6 +43,12 @@ class Server {
         this.app = express();
         this.port = Number(process.env.PORT) || 3000;
 
+        validarEntorno();
+
+        if (process.env.NODE_ENV === "production") {
+            this.app.set("trust proxy", 1);
+        }
+
         this.middlewares();
         this.routes();
     }
@@ -51,7 +58,17 @@ class Server {
     }
 
     private middlewares(): void {
-        this.app.use(cors({ origin: "*" }));
+        const origenes = (process.env.FRONTEND_URL ?? "")
+            .split(",")
+            .map((origen) => origen.trim())
+            .filter(Boolean);
+
+        this.app.use(
+            cors({
+                origin: origenes.length > 0 ? origenes : true,
+                credentials: true,
+            })
+        );
 
         this.app.use(express.json());
         this.app.use(express.urlencoded({ extended: true }));
