@@ -20,6 +20,9 @@ import generosRouter from "../routes/generos.js";
 import atributosRouter from "../routes/atributos.js";
 import valoresAtributosRouter from "../routes/valoresAtributos.js";
 import categoriasAtributosRouter from "../routes/categoriasAtributos.js";
+import inventarioRouter from "../routes/inventario.js";
+import proveedoresRouter from "../routes/proveedores.js";
+import comprasRouter from "../routes/compras.js";
 
 
 class Server {
@@ -36,6 +39,9 @@ class Server {
         atributos: '/api/atributos',
         valoresAtributos: '/api/valores-atributos',
         categoriasAtributos: '/api/categorias-atributos',
+        inventario: '/api/inventario',
+        proveedores: '/api/proveedores',
+        compras: '/api/compras',
         
     };
 
@@ -92,6 +98,9 @@ class Server {
         this.app.use(this.paths.atributos, atributosRouter);
         this.app.use(this.paths.valoresAtributos, valoresAtributosRouter);
         this.app.use(this.paths.categoriasAtributos, categoriasAtributosRouter);
+        this.app.use(this.paths.inventario, inventarioRouter);
+        this.app.use(this.paths.proveedores, proveedoresRouter);
+        this.app.use(this.paths.compras, comprasRouter);
         
 
         // Middleware 404: debe ir después de todas las rutas.
