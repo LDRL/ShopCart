@@ -3,7 +3,7 @@ import { body, validationResult } from "express-validator";
 
 import { obtenerNumeroErrorSql } from "../utils/sqlErrors.js";
 import { crearClienteService, actualizarClienteService, eliminarClienteService, listarClientesService,
-    obtenerClientePorIdService, generarTokenInvitadoService } from "../services/cliente.service.js";
+    obtenerClientePorIdService, generarTokenInvitadoService, buscarClientePorNitOCorreoService } from "../services/cliente.service.js";
 
 const ERRORES_CONFLICTO = new Set([50721, 50722]);
 const ERRORES_NO_ENCONTRADOS = new Set([50723]);
@@ -213,5 +213,23 @@ export const postTokenInvitado = (_req: Request, res: Response): void => {
         msg: "Token de invitado generado correctamente",
         data,
     });
+};
+
+
+export const buscarCliente = async (req: Request, res: Response): Promise<void> => {
+    const nit = req.query.nit?.toString() || req.query.Nit?.toString() || null;
+    const correo = req.query.correo?.toString() || req.query.email?.toString() || null;
+
+    try {
+        const data = await buscarClientePorNitOCorreoService(nit, correo);
+        if (!data || (Array.isArray(data) && data.length === 0)) {
+            res.status(404).json({ msg: "Cliente no encontrado" });
+            return;
+        }
+        res.status(200).json({ msg: "Cliente obtenido con exito", data });
+    } catch (error: unknown) {
+        console.error("Error al buscar cliente:", error);
+        res.status(500).json({ msg: "Hubo un error al buscar el cliente" });
+    }
 };
 

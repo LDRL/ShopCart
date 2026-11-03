@@ -155,7 +155,8 @@ export const postProducto = async (req: Request, res: Response): Promise<void> =
             descripcion ?? null,
             Number(precioBase),
             variantes,
-            imagenes
+            imagenes,
+            (req as any).user?.IDUsuario ?? null
         );
         res.status(201).json({
             msg: "Producto creado correctamente",
@@ -193,7 +194,8 @@ export const putProducto = async (req: Request, res: Response): Promise<void> =>
             Number(precioBase),
             Boolean(estado),
             variantes,
-            imagenes
+            imagenes,
+            (req as any).user?.IDUsuario ?? null
         );
         res.status(200).json({
             msg: "Producto actualizado correctamente",
@@ -211,7 +213,7 @@ export const deleteProducto = async (req: Request, res: Response): Promise<void>
         return;
     }
     try {
-        const data = await eliminarProductoService(id);
+        const data = await eliminarProductoService(id, (req as any).user?.IDUsuario ?? null);
         res.status(200).json({
             msg: "Producto eliminado correctamente",
             data: data ?? null,
@@ -305,4 +307,7 @@ export const transformarProducto = (
         imagenes
     };
 };
+
+
+
 

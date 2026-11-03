@@ -50,3 +50,11 @@ export const obtenerClientePorIdService = async (IDCliente: number) => {
 
     return cliente;
 };
+
+export const buscarClientePorNitOCorreoService = async (
+    nit?: string | null,
+    correo?: string | null
+) => {
+    const { buscarClientePorNitOCorreoRepo } = await import("../repositories/cliente.repository.js");
+    return await buscarClientePorNitOCorreoRepo(nit, correo);
+};

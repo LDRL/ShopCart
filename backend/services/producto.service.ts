@@ -95,7 +95,8 @@ export const crearProductoService = async (
     descripcion: string | null,
     precioBase: number,
     variantes: VarianteProductoPayload[],
-    imagenes: ImagenProductoPayload[] = []
+    imagenes: ImagenProductoPayload[] = [],
+    idUsuario?: number | null
 ) => {
     const variantesNormalizadas = prepararVariantes(
         nombre,
@@ -112,7 +113,8 @@ export const crearProductoService = async (
         descripcion,
         precioBase,
         variantesNormalizadas,
-        imagenes
+        imagenes,
+        idUsuario
     );
 };
 
@@ -125,7 +127,8 @@ export const actualizarProductoService = async (
     precioBase: number,
     estado: boolean,
     variantes?: VarianteProductoPayload[],
-    imagenes?: ImagenProductoPayload[]
+    imagenes?: ImagenProductoPayload[],
+    idUsuario?: number | null
 ) => {
     const variantesNormalizadas =
         variantes === undefined
@@ -141,13 +144,18 @@ export const actualizarProductoService = async (
         precioBase,
         estado,
         variantesNormalizadas,
-        imagenes ?? null
+        imagenes ?? null,
+        idUsuario
     );
 };
 
-export const eliminarProductoService = async (IDProducto: number) => {
-    return await eliminarProductoRepo(IDProducto);
+export const eliminarProductoService = async (IDProducto: number, idUsuario?: number | null) => {
+    return await eliminarProductoRepo(IDProducto, idUsuario);
 };
+
+
+
+
 
 
 

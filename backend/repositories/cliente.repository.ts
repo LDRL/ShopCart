@@ -83,3 +83,17 @@ export const obtenerClientePorIdRepo = async (IDCliente: number) => {
 
     return result.recordset?.[0] ?? null;
 };
+
+export const buscarClientePorNitOCorreoRepo = async (
+    nit?: string | null,
+    correo?: string | null
+) => {
+    const { dbConnect, sql } = await import("../config/db/connection.js");
+    const pool = await dbConnect();
+    const result = await pool
+        .request()
+        .input("Nit", sql.VarChar(11), nit ?? null)
+        .input("Correo", sql.VarChar(150), correo ?? null)
+        .execute("dbo.SP_Clientes_BuscarPorNitOCorreo");
+    return result.recordset ?? [];
+};

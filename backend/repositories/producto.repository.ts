@@ -152,7 +152,8 @@ export const crearProductoRepo = async (
     descripcion: string | null,
     precioBase: number,
     variantes: VarianteProductoPayload[],
-    imagenes: ImagenProductoPayload[]
+    imagenes: ImagenProductoPayload[],
+    idUsuario?: number | null
 ) => {
     const pool = await dbConnect();
     const result = await pool.request()
@@ -163,6 +164,7 @@ export const crearProductoRepo = async (
         .input("PrecioBase", sql.Decimal(10, 2), precioBase)
         .input("Variantes", sql.NVarChar(sql.MAX), JSON.stringify(variantes))
         .input("Imagenes", sql.NVarChar(sql.MAX), JSON.stringify(imagenes))
+        .input("IDUsuario", sql.Int, idUsuario ?? null)
         .execute("dbo.SP_Producto_CrearProducto");
 
     return extraerResultado(result);
@@ -177,7 +179,8 @@ export const actualizarProductoRepo = async (
     precioBase: number,
     estado: boolean,
     variantes: VarianteProductoPayload[] | null,
-    imagenes: ImagenProductoPayload[] | null
+    imagenes: ImagenProductoPayload[] | null,
+    idUsuario?: number | null
 ) => {
     const pool = await dbConnect();
     const result = await pool.request()
@@ -190,16 +193,20 @@ export const actualizarProductoRepo = async (
         .input("Estado", sql.Bit, estado ? 1 : 0)
         .input("Variantes", sql.NVarChar(sql.MAX), serializarVariantes(variantes))
         .input("Imagenes", sql.NVarChar(sql.MAX), serializarImagenes(imagenes))
+        .input("IDUsuario", sql.Int, idUsuario ?? null)
         .execute("dbo.SP_Producto_ActualizarProducto");
 
     return extraerResultado(result);
 };
 
-export const eliminarProductoRepo = async (IDProducto: number) => {
+export const eliminarProductoRepo = async (IDProducto: number, idUsuario?: number | null) => {
     const pool = await dbConnect();
     const result = await pool
         .request()
         .input("IDProducto", sql.Int, IDProducto)
+        .input("IDUsuario", sql.Int, idUsuario ?? null)
         .execute("dbo.SP_Producto_EliminarProducto");
     return result.recordset?.[0] ?? null;
 };
+
+
