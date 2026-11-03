@@ -38,13 +38,23 @@ export const obtenerDisponibilidadRepo = async (IDProductoVariante: number) => {
     return result.recordset?.[0] ?? null;
 };
 
-export const obtenerKardexRepo = async (IDProductoVariante: number) => {
+export const obtenerKardexRepo = async (
+    IDProductoVariante: number,
+    params: { pagina?: number | null; registrosPorPagina?: number | null } = {}
+) => {
     const pool = await dbConnect();
-
     const result = await pool
         .request()
+        .input("Pagina", sql.Int, params.pagina ?? null)
+        .input("RegistrosPorPagina", sql.Int, params.registrosPorPagina ?? null)
         .input("IDProductoVariante", sql.Int, IDProductoVariante)
         .execute("dbo.SP_Inventario_ObtenerKardex");
 
-    return result.recordset ?? [];
+    const recordsets = Array.isArray(result.recordsets) ? result.recordsets : [];
+    const totalRegistros = Number(recordsets[0]?.[0]?.TotalRegistros ?? 0);
+    const rows = recordsets[1] ?? [];
+
+    return { rows, totalRegistros };
 };
+
+

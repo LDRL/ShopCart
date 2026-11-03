@@ -1,3 +1,4 @@
+import { construirPaginacion } from "../utils/paginacion.js";
 import {
     registrarMovimientoRepo,
     obtenerDisponibilidadRepo,
@@ -23,6 +24,19 @@ export const obtenerDisponibilidadService = async (
     return disponibilidad;
 };
 
-export const obtenerKardexService = async (IDProductoVariante: number) => {
-    return await obtenerKardexRepo(IDProductoVariante);
+export const obtenerKardexService = async (
+    IDProductoVariante: number,
+    params: { pagina?: number | null; registrosPorPagina?: number | null } = {}
+) => {
+    const { rows, totalRegistros } = await obtenerKardexRepo(IDProductoVariante, params);
+    return {
+        data: rows,
+        paginacion: construirPaginacion(
+            totalRegistros,
+            params.pagina ?? null,
+            params.registrosPorPagina ?? null
+        ),
+    };
 };
+
+

@@ -32,14 +32,29 @@ export const crearCompraRepo = async (input: CompraInput) => {
     return result.recordset?.[0] ?? null;
 };
 
-export const listarComprasRepo = async () => {
+export interface PaginacionParams {
+    pagina?: number | null;
+    registrosPorPagina?: number | null;
+}
+
+export const listarComprasRepo = async (
+    params: PaginacionParams & { estado?: boolean | null; buscar?: string | null } = {}
+) => {
     const pool = await dbConnect();
 
     const result = await pool
         .request()
+        .input("Pagina", sql.Int, params.pagina ?? null)
+        .input("RegistrosPorPagina", sql.Int, params.registrosPorPagina ?? null)
+        .input("Estado", sql.Bit, params.estado === null || params.estado === undefined ? null : (params.estado ? 1 : 0))
+        .input("Buscar", sql.VarChar(100), params.buscar ?? null)
         .execute("dbo.SP_Compras_ListarCompras");
 
-    return result.recordset ?? [];
+    const recordsets = Array.isArray(result.recordsets) ? result.recordsets : [];
+    const totalRegistros = Number(recordsets[0]?.[0]?.TotalRegistros ?? 0);
+    const rows = recordsets[1] ?? [];
+
+    return { rows, totalRegistros };
 };
 
 export const obtenerCompraPorIdRepo = async (IDCompra: number) => {
@@ -81,3 +96,4 @@ export const anularCompraRepo = async (
 
     return result.recordset?.[0] ?? null;
 };
+

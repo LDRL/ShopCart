@@ -2,16 +2,19 @@ import type { Response } from "express";
 import { body, param, query, validationResult } from "express-validator";
 
 import { obtenerNumeroErrorSql } from "../utils/sqlErrors.js";
+import { esTokenInvitadoValido, tokenInvitadoDesdeRequest } from "../utils/invitado.js";
 import type { AuthRequest } from "../types/auth.types.js";
 import {
     cambiarEstadoDevolucionService,
     cambiarEstadoPedidoService,
     cancelarPedidoService,
     crearPedidoService,
+    listarDevolucionesService,
     listarDevolucionesPorPedidoService,
     listarPedidosService,
     obtenerPedidoService,
     solicitarDevolucionService,
+    type Actor,
     type ActorPedido,
 } from "../services/pedido.service.js";
 
@@ -49,6 +52,9 @@ const responderErrorPedido = (
                 return;
             case "PEDIDO_TRANSICION_INVALIDA":
                 res.status(409).json({ msg: "La transicion de estado no esta permitida" });
+                return;
+            case "PEDIDO_CONTACTO_REQUERIDO":
+                res.status(400).json({ msg: "nombre, apellido y correo son obligatorios para pedidos de invitado" });
                 return;
             case "PEDIDO_ESTADO_INVALIDO":
                 res.status(400).json({ msg: "El estado solicitado no es valido" });
@@ -96,6 +102,32 @@ const obtenerActor = (req: AuthRequest): ActorPedido | null => {
 
 const responderNoAutorizado = (res: Response): void => {
     res.status(401).json({ error: "No autorizado" });
+};
+
+const obtenerSolicitante = ( req: AuthRequest, res: Response ): Actor | null => {
+    const actor = obtenerActor(req);
+
+    if (actor) {
+        return actor;
+    }
+
+    const tokenInvitado = tokenInvitadoDesdeRequest(req);
+
+    if (!tokenInvitado) {
+        res.status(401).json({
+            error: "No autorizado: sesion o token de invitado requerido",
+        });
+        return null;
+    }
+
+    if (!esTokenInvitadoValido(tokenInvitado)) {
+        res.status(400).json({
+            msg: "tokenInvitado invalido: use entre 16 y 64 caracteres alfanumericos, guion o guion bajo",
+        });
+        return null;
+    }
+
+    return { tokenInvitado };
 };
 
 const responderDatosInvalidos = (req: AuthRequest, res: Response): boolean => {
@@ -148,6 +180,35 @@ export const validarCrearPedido = [
         .isInt({ min: 1, max: 1440 })
         .withMessage("minutosExpiracion debe estar entre 1 y 1440")
         .toInt(),
+    body("nombre")
+        .optional({ nullable: true })
+        .isString()
+        .withMessage("nombre debe ser una cadena de texto")
+        .trim()
+        .notEmpty()
+        .withMessage("nombre no puede estar vacio")
+        .isLength({ max: 100 })
+        .withMessage("nombre no puede exceder 100 caracteres"),
+    body("apellido")
+        .optional({ nullable: true })
+        .isString()
+        .withMessage("apellido debe ser una cadena de texto")
+        .trim()
+        .notEmpty()
+        .withMessage("apellido no puede estar vacio")
+        .isLength({ max: 100 })
+        .withMessage("apellido no puede exceder 100 caracteres"),
+    body("correo")
+        .optional({ nullable: true })
+        .isString()
+        .withMessage("correo debe ser una cadena de texto")
+        .trim()
+        .notEmpty()
+        .withMessage("correo no puede estar vacio")
+        .isLength({ max: 150 })
+        .withMessage("correo no puede exceder 150 caracteres")
+        .matches(/^[^@\s]+@[^@\s]+\.[^@\s]+$/)
+        .withMessage("correo no es valido"),
 ];
 
 export const validarCambiarEstadoPedido = [
@@ -226,6 +287,55 @@ export const validarCambiarEstadoDevolucion = [
         .withMessage("observaciones no puede exceder 500 caracteres"),
 ];
 
+const construirPaginacion = (
+    totalRegistros: number,
+    pagina?: number | null,
+    registrosPorPagina?: number | null
+) =>
+    pagina && registrosPorPagina
+        ? {
+            pagina,
+            registrosPorPagina,
+            totalRegistros,
+            totalPaginas: Math.ceil(totalRegistros / registrosPorPagina),
+        }
+        : {
+            pagina: null,
+            registrosPorPagina: null,
+            totalRegistros,
+            totalPaginas: null,
+        };
+
+const VALIDACION_PAGINACION = [
+    query("pagina")
+        .optional()
+        .isInt({ min: 1 })
+        .withMessage("pagina debe ser un entero positivo")
+        .toInt(),
+    query("registrosPorPagina")
+        .optional()
+        .isInt({ min: 1, max: 100 })
+        .withMessage("registrosPorPagina debe estar entre 1 y 100")
+        .toInt(),
+];
+
+export const validarPaginacion = VALIDACION_PAGINACION;
+
+export const validarFiltrosDevoluciones = [
+    query("estado")
+        .optional()
+        .isIn(ESTADOS_DEVOLUCION)
+        .withMessage(`estado debe ser uno de: ${ESTADOS_DEVOLUCION.join(", ")}`),
+    query("buscar")
+        .optional()
+        .isString()
+        .withMessage("buscar debe ser una cadena de texto")
+        .trim()
+        .isLength({ max: 100 })
+        .withMessage("buscar no puede exceder 100 caracteres"),
+    ...VALIDACION_PAGINACION,
+];
+
 export const validarFiltrosPedidos = [
     query("IDCliente")
         .optional()
@@ -244,15 +354,15 @@ export const validarFiltrosPedidos = [
         .trim()
         .isLength({ max: 100 })
         .withMessage("buscar no puede exceder 100 caracteres"),
+    query("registrosPorPagina")
+        .optional()
+        .isInt({ min: 1, max: 100 })
+        .withMessage("registrosPorPagina debe estar entre 1 y 100")
+        .toInt(),
     query("pagina")
         .optional()
         .isInt({ min: 1 })
         .withMessage("pagina debe ser un entero positivo")
-        .toInt(),
-    query("tamanoPagina")
-        .optional()
-        .isInt({ min: 1, max: 100 })
-        .withMessage("tamanoPagina debe estar entre 1 y 100")
         .toInt(),
 ];
 
@@ -261,19 +371,21 @@ export const postPedido = async ( req: AuthRequest, res: Response ): Promise<voi
         return;
     }
 
-    const actor = obtenerActor(req);
+    const actor = obtenerSolicitante(req, res);
 
     if (!actor) {
-        responderNoAutorizado(res);
         return;
     }
 
-    const { productos, codigoCupon, direccionEntrega, observaciones, minutosExpiracion } =
+    const { productos, codigoCupon, direccionEntrega, observaciones, nombre, apellido, correo, minutosExpiracion } =
         req.body as {
             productos: { IDProductoVariante: number; cantidad: number }[];
             codigoCupon?: string | null;
             direccionEntrega: string;
             observaciones?: string | null;
+            nombre?: string | null;
+            apellido?: string | null;
+            correo?: string | null;
             minutosExpiracion?: number | null;
         };
 
@@ -283,6 +395,9 @@ export const postPedido = async ( req: AuthRequest, res: Response ): Promise<voi
             codigoCupon: codigoCupon ?? null,
             direccionEntrega,
             observaciones: observaciones ?? null,
+            nombre: nombre ?? null,
+            apellido: apellido ?? null,
+            correo: correo ?? null,
             minutosExpiracion: minutosExpiracion ?? 15,
         });
 
@@ -300,42 +415,34 @@ export const getPedidos = async ( req: AuthRequest, res: Response ): Promise<voi
         return;
     }
 
-    const actor = obtenerActor(req);
+    const actor = obtenerSolicitante(req, res);
 
     if (!actor) {
-        responderNoAutorizado(res);
         return;
     }
 
-    const { IDCliente, IDEstadoPedido, buscar, pagina, tamanoPagina } =
+    const { IDCliente, IDEstadoPedido, buscar, pagina, registrosPorPagina } =
         req.query as {
             IDCliente?: number;
             IDEstadoPedido?: number;
             buscar?: string;
             pagina?: number;
-            tamanoPagina?: number;
+            registrosPorPagina?: number;
         };
 
     try {
-        const data = await listarPedidosService(actor, {
+        const { pedidos, totalRegistros } = await listarPedidosService(actor, {
             IDCliente: IDCliente ?? null,
             IDEstadoPedido: IDEstadoPedido ?? null,
             buscar: buscar ?? null,
-            pagina: pagina ?? 1,
-            tamanoPagina: tamanoPagina ?? 20,
+            pagina: pagina ?? null,
+            registrosPorPagina: registrosPorPagina ?? null,
         });
-
-        const totalRegistros = data[0]?.totalRegistros ?? 0;
 
         res.status(200).json({
             msg: "Pedidos obtenidos con exito",
-            data,
-            paginacion: {
-                pagina: pagina ?? 1,
-                tamanoPagina: tamanoPagina ?? 20,
-                totalRegistros,
-                totalPaginas: Math.ceil(totalRegistros / (tamanoPagina ?? 20)),
-            },
+            data: pedidos,
+            paginacion: construirPaginacion(totalRegistros, pagina, registrosPorPagina),
         });
     } catch (error: unknown) {
         responderErrorPedido(res, error, "obtener pedidos");
@@ -343,10 +450,9 @@ export const getPedidos = async ( req: AuthRequest, res: Response ): Promise<voi
 };
 
 export const getPedido = async ( req: AuthRequest, res: Response ): Promise<void> => {
-    const actor = obtenerActor(req);
+    const actor = obtenerSolicitante(req, res);
 
     if (!actor) {
-        responderNoAutorizado(res);
         return;
     }
 
@@ -374,10 +480,9 @@ export const patchEstadoPedido = async ( req: AuthRequest, res: Response ): Prom
         return;
     }
 
-    const actor = obtenerActor(req);
+    const actor = obtenerSolicitante(req, res);
 
     if (!actor) {
-        responderNoAutorizado(res);
         return;
     }
 
@@ -409,10 +514,9 @@ export const postCancelarPedido = async ( req: AuthRequest, res: Response ): Pro
         return;
     }
 
-    const actor = obtenerActor(req);
+    const actor = obtenerSolicitante(req, res);
 
     if (!actor) {
-        responderNoAutorizado(res);
         return;
     }
 
@@ -436,10 +540,9 @@ export const postDevolucion = async ( req: AuthRequest, res: Response ): Promise
         return;
     }
 
-    const actor = obtenerActor(req);
+    const actor = obtenerSolicitante(req, res);
 
     if (!actor) {
-        responderNoAutorizado(res);
         return;
     }
 
@@ -466,10 +569,13 @@ export const postDevolucion = async ( req: AuthRequest, res: Response ): Promise
 };
 
 export const getDevolucionesPorPedido = async ( req: AuthRequest, res: Response ): Promise<void> => {
-    const actor = obtenerActor(req);
+    if (responderDatosInvalidos(req, res)) {
+        return;
+    }
+
+    const actor = obtenerSolicitante(req, res);
 
     if (!actor) {
-        responderNoAutorizado(res);
         return;
     }
 
@@ -480,12 +586,21 @@ export const getDevolucionesPorPedido = async ( req: AuthRequest, res: Response 
         return;
     }
 
+    const { pagina, registrosPorPagina } = req.query as { pagina?: number; registrosPorPagina?: number };
+
     try {
-        const data = await listarDevolucionesPorPedidoService(actor, IDPedido);
+        const data = await listarDevolucionesPorPedidoService(actor, IDPedido, {
+            pagina: pagina ?? null,
+            registrosPorPagina: registrosPorPagina ?? null,
+        });
 
         res.status(200).json({
             msg: "Devoluciones obtenidas con exito",
-            data,
+            data: {
+                devoluciones: data.devoluciones,
+                detalles: data.detalles,
+            },
+            paginacion: construirPaginacion(data.totalRegistros, pagina, registrosPorPagina),
         });
     } catch (error: unknown) {
         responderErrorPedido(res, error, "obtener devoluciones");
@@ -524,5 +639,42 @@ export const patchEstadoDevolucion = async ( req: AuthRequest, res: Response ): 
         });
     } catch (error: unknown) {
         responderErrorPedido(res, error, "actualizar estado de la devolucion");
+    }
+};
+
+export const getDevoluciones = async ( req: AuthRequest, res: Response ): Promise<void> => {
+    if (responderDatosInvalidos(req, res)) {
+        return;
+    }
+
+    const actor = obtenerActor(req);
+
+    if (!actor) {
+        responderNoAutorizado(res);
+        return;
+    }
+
+    const { estado, buscar, pagina, registrosPorPagina } = req.query as {
+        estado?: string;
+        buscar?: string;
+        pagina?: number;
+        registrosPorPagina?: number;
+    };
+
+    try {
+        const { devoluciones, totalRegistros } = await listarDevolucionesService(actor, {
+            estado: estado ?? null,
+            buscar: buscar ?? null,
+            pagina: pagina ?? null,
+            registrosPorPagina: registrosPorPagina ?? null,
+        });
+
+        res.status(200).json({
+            msg: "Devoluciones obtenidas con exito",
+            data: devoluciones,
+            paginacion: construirPaginacion(totalRegistros, pagina, registrosPorPagina),
+        });
+    } catch (error: unknown) {
+        responderErrorPedido(res, error, "obtener devoluciones");
     }
 };

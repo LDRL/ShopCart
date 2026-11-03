@@ -1,14 +1,22 @@
 import { dbConnect, sql } from "../config/db/connection.js";
 
-export const listarCategoriasAtributosRepo = async (IDCategoria?: number) => {
+export const listarCategoriasAtributosRepo = async (
+    IDCategoria: number | null = null,
+    params: { pagina?: number | null; registrosPorPagina?: number | null } = {}
+) => {
     const pool = await dbConnect();
-
     const result = await pool
         .request()
-        .input("IDCategoria", sql.Int, IDCategoria ?? null)
+        .input("Pagina", sql.Int, params.pagina ?? null)
+        .input("RegistrosPorPagina", sql.Int, params.registrosPorPagina ?? null)
+        .input("IDCategoria", sql.Int, IDCategoria)
         .execute("dbo.SP_Producto_ObtenerCategoriasAtributos");
 
-    return result.recordset ?? [];
+    const recordsets = Array.isArray(result.recordsets) ? result.recordsets : [];
+    const totalRegistros = Number(recordsets[0]?.[0]?.TotalRegistros ?? 0);
+    const rows = recordsets[1] ?? [];
+
+    return { rows, totalRegistros };
 };
 
 export const obtenerCategoriaAtributoPorIdRepo = async (
@@ -70,3 +78,5 @@ export const eliminarCategoriaAtributoRepo = async (IDCategoriaAtributo: number)
 
     return result.recordset?.[0] ?? null;
 };
+
+

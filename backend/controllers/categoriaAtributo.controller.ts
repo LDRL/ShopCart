@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import { body, validationResult } from "express-validator";
 
 import { obtenerNumeroErrorSql } from "../utils/sqlErrors.js";
+import { obtenerPaginacion, responderPaginacionError } from "../utils/paginacion.js";
 import { obtenerCategoriasAtributosService, obtenerCategoriaAtributoPorIdService, crearCategoriaAtributoService, actualizarCategoriaAtributoService,
     eliminarCategoriaAtributoService,
 } from "../services/categoriaAtributo.service.js";
@@ -73,23 +74,32 @@ export const getCategoriasAtributos = async (
     req: Request,
     res: Response
 ): Promise<void> => {
-    const IDCategoriaRaw = req.query.IDCategoria;
-
+    const IDCategoriaRaw = req.query.IDCategoria ?? req.query.idCategoria;
     const IDCategoria =
-        IDCategoriaRaw === undefined ? undefined : Number(IDCategoriaRaw);
+        IDCategoriaRaw === undefined ? null : Number(IDCategoriaRaw);
 
-    if (IDCategoria !== undefined && !esIdValido(IDCategoria)) {
+    if (IDCategoria !== null && !esIdValido(IDCategoria)) {
         res.status(400).json({ msg: "El ID de la categoria es invalido" });
         return;
     }
 
     try {
-        const asociaciones = await obtenerCategoriasAtributosService(IDCategoria);
+        const { pagina, registrosPorPagina } = obtenerPaginacion(req);
+        const result = await obtenerCategoriasAtributosService(IDCategoria, {
+            pagina,
+            registrosPorPagina,
+        });
         res.status(200).json({
             msg: "Asociaciones categoria-atributo obtenidas con exito",
-            data: asociaciones,
+            ...result,
         });
     } catch (error: unknown) {
+        try {
+            responderPaginacionError(res, error);
+            return;
+        } catch {
+            // no es error de paginacion
+        }
         console.error(
             "Error al listar asociaciones categoria-atributo:",
             error instanceof Error ? error.message : error
@@ -223,3 +233,5 @@ export const deleteCategoriaAtributo = async ( req: Request, res: Response ): Pr
         responderErrorCategoriaAtributo(res, error, "eliminar asociacion categoria-atributo");
     }
 };
+
+

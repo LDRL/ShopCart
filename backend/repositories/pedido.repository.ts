@@ -6,18 +6,23 @@ export interface PedidoProductoInput {
 }
 
 export interface CrearPedidoInput {
-    IDUsuario: number;
+    IDUsuario: number | null;
+    tokenInvitado?: string | null;
     productos: PedidoProductoInput[];
     codigoCupon?: string | null;
     direccionEntrega: string;
     observaciones?: string | null;
+    nombre?: string | null;
+    apellido?: string | null;
+    correo?: string | null;
     minutosExpiracion?: number;
 }
 
 export interface CambiarEstadoPedidoInput {
     IDPedido: number;
     IDEstadoNuevo: number;
-    IDUsuario: number;
+    IDUsuario: number | null;
+    tokenInvitado?: string | null;
     observaciones?: string | null;
 }
 
@@ -28,7 +33,8 @@ export interface DevolucionProductoInput {
 
 export interface CrearDevolucionInput {
     IDPedido: number;
-    IDUsuario: number;
+    IDUsuario: number | null;
+    tokenInvitado?: string | null;
     productos: DevolucionProductoInput[];
     motivo: string;
     IDCliente?: number | null;
@@ -59,7 +65,7 @@ export const obtenerResumenPedidoRepo = async (IDPedido: number) => {
         .request()
         .input("IDPedido", sql.Int, IDPedido)
         .query(
-            "SELECT IDPedido, IDUsuario, IDCliente, IDEstadoPedido FROM dbo.Pedidos WHERE IDPedido = @IDPedido"
+            "SELECT IDPedido, IDUsuario, IDCliente, IDEstadoPedido, tokenInvitado FROM dbo.Pedidos WHERE IDPedido = @IDPedido"
         );
 
     return result.recordset?.[0] ?? null;
@@ -88,7 +94,11 @@ export const crearPedidoRepo = async (input: CrearPedidoInput) => {
         .input("CodigoCupon", sql.VarChar(50), input.codigoCupon ?? null)
         .input("DireccionEntrega", sql.VarChar(500), input.direccionEntrega)
         .input("Observaciones", sql.VarChar(500), input.observaciones ?? null)
+        .input("NombreContacto", sql.VarChar(100), input.nombre ?? null)
+        .input("ApellidoContacto", sql.VarChar(100), input.apellido ?? null)
+        .input("CorreoContacto", sql.VarChar(150), input.correo ?? null)
         .input("MinutosExpiracion", sql.Int, input.minutosExpiracion ?? 15)
+        .input("TokenInvitado", sql.VarChar(64), input.tokenInvitado ?? null)
         .execute("dbo.SP_Pedidos_CrearPedido");
 
     return result.recordset?.[0] ?? null;
@@ -105,6 +115,7 @@ export const cambiarEstadoPedidoRepo = async (
         .input("IDEstadoNuevo", sql.Int, input.IDEstadoNuevo)
         .input("IDUsuario", sql.Int, input.IDUsuario)
         .input("Observaciones", sql.VarChar(500), input.observaciones ?? null)
+        .input("TokenInvitado", sql.VarChar(64), input.tokenInvitado ?? null)
         .execute("dbo.SP_Pedidos_CambiarEstado");
 
     return result.recordset?.[0] ?? null;
@@ -114,8 +125,9 @@ export const listarPedidosRepo = async (params: {
     IDCliente?: number | null;
     IDEstadoPedido?: number | null;
     buscar?: string | null;
-    pagina?: number;
-    tamanoPagina?: number;
+    pagina?: number | null;
+    registrosPorPagina?: number | null;
+    tokenInvitado?: string | null;
 }) => {
     const pool = await dbConnect();
 
@@ -124,16 +136,25 @@ export const listarPedidosRepo = async (params: {
         .input("IDCliente", sql.Int, params.IDCliente ?? null)
         .input("IDEstadoPedido", sql.Int, params.IDEstadoPedido ?? null)
         .input("Buscar", sql.VarChar(100), params.buscar ?? null)
-        .input("Pagina", sql.Int, params.pagina ?? 1)
-        .input("TamanoPagina", sql.Int, params.tamanoPagina ?? 20)
+        .input("Pagina", sql.Int, params.pagina ?? null)
+        .input("RegistrosPorPagina", sql.Int, params.registrosPorPagina ?? null)
+        .input("TokenInvitado", sql.VarChar(64), params.tokenInvitado ?? null)
         .execute("dbo.SP_Pedidos_ListarPedidos");
 
-    return result.recordset ?? [];
+    const recordsets = Array.isArray(result.recordsets) ? result.recordsets : [];
+    const totalRegistros = Number(recordsets[0]?.[0]?.TotalRegistros ?? 0);
+    const pedidos = recordsets[1] ?? [];
+
+    return {
+        pedidos,
+        totalRegistros,
+    };
 };
 
 export const obtenerPedidoRepo = async (
     IDPedido: number,
-    IDCliente?: number | null
+    IDCliente?: number | null,
+    tokenInvitado?: string | null
 ) => {
     const pool = await dbConnect();
 
@@ -141,6 +162,7 @@ export const obtenerPedidoRepo = async (
         .request()
         .input("IDPedido", sql.Int, IDPedido)
         .input("IDCliente", sql.Int, IDCliente ?? null)
+        .input("TokenInvitado", sql.VarChar(64), tokenInvitado ?? null)
         .execute("dbo.SP_Pedidos_ObtenerPedido");
 
     const recordsets = Array.isArray(result.recordsets) ? result.recordsets : [];
@@ -164,6 +186,7 @@ export const crearDevolucionRepo = async (input: CrearDevolucionInput) => {
         .request()
         .input("IDPedido", sql.Int, input.IDPedido)
         .input("IDUsuario", sql.Int, input.IDUsuario)
+        .input("TokenInvitado", sql.VarChar(64), input.tokenInvitado ?? null)
         .input("Lineas", sql.NVarChar(sql.MAX), JSON.stringify(input.productos))
         .input("Motivo", sql.VarChar(500), input.motivo)
         .input("IDCliente", sql.Int, input.IDCliente ?? null)
@@ -190,7 +213,10 @@ export const cambiarEstadoDevolucionRepo = async (
 
 export const listarDevolucionesPorPedidoRepo = async (
     IDPedido: number,
-    IDCliente?: number | null
+    IDCliente?: number | null,
+    tokenInvitado?: string | null,
+    pagina?: number | null,
+    registrosPorPagina?: number | null
 ) => {
     const pool = await dbConnect();
 
@@ -198,13 +224,56 @@ export const listarDevolucionesPorPedidoRepo = async (
         .request()
         .input("IDPedido", sql.Int, IDPedido)
         .input("IDCliente", sql.Int, IDCliente ?? null)
+        .input("TokenInvitado", sql.VarChar(64), tokenInvitado ?? null)
+        .input("Pagina", sql.Int, pagina ?? null)
+        .input("RegistrosPorPagina", sql.Int, registrosPorPagina ?? null)
         .execute("dbo.SP_Devoluciones_ListarPorPedido");
 
     const recordsets = Array.isArray(result.recordsets) ? result.recordsets : [];
 
+    /* Si el pedido no coincide con el cliente/token, el SP no devuelve filas */
+    if (recordsets.length === 0) {
+        return {
+            devoluciones: [],
+            detalles: [],
+            totalRegistros: 0,
+        };
+    }
+
+    const totalRegistros = Number(recordsets[0]?.[0]?.TotalRegistros ?? 0);
+    const devoluciones = recordsets[1] ?? [];
+    const detalles = recordsets[2] ?? [];
+
     return {
-        devoluciones: recordsets[0] ?? [],
-        detalles: recordsets[1] ?? [],
+        devoluciones,
+        detalles,
+        totalRegistros,
+    };
+};
+
+export const listarDevolucionesRepo = async (params: {
+    pagina?: number | null;
+    registrosPorPagina?: number | null;
+    estado?: string | null;
+    buscar?: string | null;
+}) => {
+    const pool = await dbConnect();
+
+    const result = await pool
+        .request()
+        .input("Pagina", sql.Int, params.pagina ?? null)
+        .input("RegistrosPorPagina", sql.Int, params.registrosPorPagina ?? null)
+        .input("Estado", sql.VarChar(20), params.estado ?? null)
+        .input("Buscar", sql.VarChar(100), params.buscar ?? null)
+        .execute("dbo.SP_Devoluciones_ListarDevoluciones");
+
+    const recordsets = Array.isArray(result.recordsets) ? result.recordsets : [];
+    const totalRegistros = Number(recordsets[0]?.[0]?.TotalRegistros ?? 0);
+    const devoluciones = recordsets[1] ?? [];
+
+    return {
+        devoluciones,
+        totalRegistros,
     };
 };
 

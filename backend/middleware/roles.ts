@@ -16,3 +16,21 @@ export const permitirRoles =
 
         next();
     };
+
+export const permitirRolesOInvitado =
+    (...roles: number[]) =>
+    (req: AuthRequest, res: Response, next: NextFunction): void => {
+        if (!req.user) {
+            next();
+            return;
+        }
+
+        if (!roles.includes(req.user.IDRol)) {
+            res.status(403).json({
+                error: "No autorizado: rol insuficiente",
+            });
+            return;
+        }
+
+        next();
+    };

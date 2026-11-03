@@ -1,13 +1,24 @@
+export interface PaginacionParams {
+    pagina?: number | null;
+    registrosPorPagina?: number | null;
+}
+
 import { dbConnect, sql } from "../config/db/connection.js";
 
-export const listarAtributosRepo = async () => {
+export const listarAtributosRepo = async (params: PaginacionParams = {}) => {
     const pool = await dbConnect();
 
     const result = await pool
         .request()
+        .input("Pagina", sql.Int, params.pagina ?? null)
+        .input("RegistrosPorPagina", sql.Int, params.registrosPorPagina ?? null)
         .execute("dbo.SP_Producto_ObtenerAtributos");
 
-    return result.recordset ?? [];
+    const recordsets = Array.isArray(result.recordsets) ? result.recordsets : [];
+    const totalRegistros = Number(recordsets[0]?.[0]?.TotalRegistros ?? 0);
+    const rows = recordsets[1] ?? [];
+
+    return { rows, totalRegistros };
 };
 
 export const obtenerAtributoPorIdRepo = async (IDAtributo: number) => {

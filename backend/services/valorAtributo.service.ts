@@ -1,3 +1,4 @@
+import { construirPaginacion } from "../utils/paginacion.js";
 import {
     listarValoresAtributoRepo,
     obtenerValorAtributoPorIdRepo,
@@ -6,8 +7,19 @@ import {
     eliminarValorAtributoRepo,
 } from "../repositories/valorAtributo.repository.js";
 
-export const obtenerValoresAtributoService = async (IDAtributo?: number) => {
-    return await listarValoresAtributoRepo(IDAtributo);
+export const obtenerValoresAtributoService = async (
+    IDAtributo: number | null = null,
+    paginacion: { pagina?: number | null; registrosPorPagina?: number | null } = {}
+) => {
+    const { rows, totalRegistros } = await listarValoresAtributoRepo(IDAtributo, paginacion);
+    return {
+        data: rows,
+        paginacion: construirPaginacion(
+            totalRegistros,
+            paginacion.pagina ?? null,
+            paginacion.registrosPorPagina ?? null
+        ),
+    };
 };
 
 export const obtenerValorAtributoPorIdService = async (IDValorAtributo: number) => {
@@ -35,3 +47,5 @@ export const actualizarValorAtributoService = async (
 export const eliminarValorAtributoService = async (IDValorAtributo: number) => {
     return await eliminarValorAtributoRepo(IDValorAtributo);
 };
+
+

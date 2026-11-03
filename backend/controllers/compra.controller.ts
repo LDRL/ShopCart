@@ -2,6 +2,7 @@ import type { Response } from "express";
 import { body, validationResult } from "express-validator";
 
 import { obtenerNumeroErrorSql } from "../utils/sqlErrors.js";
+import { obtenerPaginacion, responderPaginacionError } from "../utils/paginacion.js";
 import type { AuthRequest } from "../types/auth.types.js";
 import {
     anularCompraService,
@@ -153,15 +154,28 @@ export const postCompra = async ( req: AuthRequest, res: Response ): Promise<voi
     }
 };
 
-export const getCompras = async ( _req: AuthRequest, res: Response ): Promise<void> => {
+export const getCompras = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-        const data = await listarComprasService();
-
+        const { pagina, registrosPorPagina } = obtenerPaginacion(req as any);
+        const estadoRaw = req.query.estado;
+        const estado = estadoRaw === undefined ? null : estadoRaw === "true" || estadoRaw === "1";
+        const result = await listarComprasService({
+            pagina,
+            registrosPorPagina,
+            estado,
+            buscar: req.query.buscar?.toString() || req.query.q?.toString() || null,
+        });
         res.status(200).json({
             msg: "Compras obtenidas con exito",
-            data,
+            ...result,
         });
     } catch (error: unknown) {
+        try {
+            responderPaginacionError(res, error);
+            return;
+        } catch {
+            // no es error de paginacion
+        }
         responderErrorCompra(res, error, "obtener compras");
     }
 };
@@ -226,3 +240,5 @@ export const anularCompra = async ( req: AuthRequest, res: Response ): Promise<v
         responderErrorCompra(res, error, "anular compra");
     }
 };
+
+

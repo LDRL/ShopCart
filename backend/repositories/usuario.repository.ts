@@ -11,21 +11,27 @@ export interface ActualizarUsuarioInput {
     IDRol: number;
 }
 
-export const listarUsuarios = async (
-    page: number,
-    limit: number,
-    search: string
-): Promise<IResult<any>> => {
-    const pool = await dbConnect();
+export interface PaginacionParams {
+    pagina?: number | null;
+    registrosPorPagina?: number | null;
+}
 
+export const listarUsuarios = async (
+    params: PaginacionParams & { buscar?: string | null } = {}
+): Promise<{ rows: any[]; totalRegistros: number }> => {
+    const pool = await dbConnect();
     const result = await pool
         .request()
-        .input("Page", sql.Int, page)
-        .input("Limit", sql.Int, limit)
-        .input("Search", sql.NVarChar(255), search.trim())
+        .input("Pagina", sql.Int, params.pagina ?? null)
+        .input("RegistrosPorPagina", sql.Int, params.registrosPorPagina ?? null)
+        .input("Buscar", sql.NVarChar(255), params.buscar ?? null)
         .execute("dbo.SP_Usuarios_ListarUsuario");
 
-    return result;
+    const recordsets = Array.isArray(result.recordsets) ? result.recordsets : [];
+    const totalRegistros = Number(recordsets[0]?.[0]?.TotalRegistros ?? 0);
+    const rows = recordsets[1] ?? [];
+
+    return { rows, totalRegistros };
 };
 
 export const obtenerUsuarioPorId = async (
@@ -149,3 +155,5 @@ export const eliminarUsuario = async (
         throw error;
     }
 };
+
+

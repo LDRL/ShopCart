@@ -1,3 +1,4 @@
+import { construirPaginacion } from "../utils/paginacion.js";
 import {
     anularCompraRepo,
     crearCompraRepo,
@@ -10,8 +11,18 @@ export const crearCompraService = async (input: CompraInput) => {
     return await crearCompraRepo(input);
 };
 
-export const listarComprasService = async () => {
-    return await listarComprasRepo();
+export const listarComprasService = async (
+    params: { pagina?: number | null; registrosPorPagina?: number | null; estado?: boolean | null; buscar?: string | null } = {}
+) => {
+    const { rows, totalRegistros } = await listarComprasRepo(params);
+    return {
+        data: rows,
+        paginacion: construirPaginacion(
+            totalRegistros,
+            params.pagina ?? null,
+            params.registrosPorPagina ?? null
+        ),
+    };
 };
 
 export const obtenerCompraPorIdService = async (IDCompra: number) => {
@@ -31,3 +42,5 @@ export const anularCompraService = async (
 ) => {
     return await anularCompraRepo(IDCompra, IDUsuario, motivo);
 };
+
+

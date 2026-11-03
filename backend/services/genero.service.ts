@@ -1,13 +1,12 @@
-import {
-    listarGenerosRepo,
-    obtenerGeneroPorIdRepo,
-    crearGeneroRepo,
-    actualizarGeneroRepo,
-    eliminarGeneroRepo,
-} from "../repositories/genero.repository.js";
+import { listarGenerosRepo, obtenerGeneroPorIdRepo, crearGeneroRepo, actualizarGeneroRepo, eliminarGeneroRepo, type PaginacionParams, } from "../repositories/genero.repository.js";
+import { construirPaginacion } from "../utils/paginacion.js";
 
-export const obtenerGenerosService = async () => {
-    return await listarGenerosRepo();
+export const obtenerGenerosService = async (paginacion: PaginacionParams) => {
+    const { rows, totalRegistros } = await listarGenerosRepo(paginacion);
+    return {
+        data: rows,
+        paginacion: construirPaginacion(totalRegistros, paginacion.pagina ?? null, paginacion.registrosPorPagina ?? null),
+    };
 };
 
 export const obtenerGeneroPorIdService = async (IDGenero: number) => {

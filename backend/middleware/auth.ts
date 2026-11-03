@@ -89,3 +89,16 @@ export const authenticate = async (
         next(error);
     }
 };
+
+export const authenticateOptional = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction
+): Promise<void> => {
+    if (!req.headers.authorization) {
+        next();
+        return;
+    }
+
+    await authenticate(req, res, next);
+};

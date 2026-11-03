@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import { body, validationResult } from "express-validator";
 
 import { obtenerNumeroErrorSql } from "../utils/sqlErrors.js";
+import { obtenerPaginacion, responderPaginacionError } from "../utils/paginacion.js";
 import {
     crearProveedorService,
     actualizarProveedorService,
@@ -113,17 +114,27 @@ export const validarActualizarProveedor = [
 ];
 
 export const getProveedores = async (
-    _req: Request,
+    req: Request,
     res: Response
 ): Promise<void> => {
     try {
-        const data = await listarProveedoresService();
-
+        const { pagina, registrosPorPagina } = obtenerPaginacion(req);
+        const result = await listarProveedoresService({
+            pagina,
+            registrosPorPagina,
+            buscar: req.query.buscar?.toString() || req.query.q?.toString() || null,
+        });
         res.status(200).json({
             msg: "Proveedores obtenidos con exito",
-            data,
+            ...result,
         });
     } catch (error: unknown) {
+        try {
+            responderPaginacionError(res, error);
+            return;
+        } catch {
+            // no es error de paginacion
+        }
         responderErrorProveedor(res, error, "obtener proveedores");
     }
 };
@@ -261,3 +272,5 @@ export const deleteProveedor = async (
         responderErrorProveedor(res, error, "desactivar proveedor");
     }
 };
+
+

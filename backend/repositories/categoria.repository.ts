@@ -1,21 +1,31 @@
 import { dbConnect, sql } from "../config/db/connection.js";
 
-export const listarCategorias = async (page: number, limit: number, search: string) => {
+export interface PaginacionParams {
+    pagina?: number | null;
+    registrosPorPagina?: number | null;
+}
+
+export const listarCategoriasRepo = async (
+    params: PaginacionParams & { buscar?: string | null } = {}
+) => {
     const pool = await dbConnect();
 
     const result = await pool
         .request()
-        .input("Page", sql.Int, page)
-        .input("Limit", sql.Int, limit)
-        .input("Search", sql.NVarChar(255), search.trim())
+        .input("Pagina", sql.Int, params.pagina ?? null)
+        .input("RegistrosPorPagina", sql.Int, params.registrosPorPagina ?? null)
+        .input("Buscar", sql.VarChar(100), params.buscar ?? null)
         .execute("dbo.SP_Categorias_ListarCategoria");
 
-    return result;
+    const recordsets = Array.isArray(result.recordsets) ? result.recordsets : [];
+    const totalRegistros = Number(recordsets[0]?.[0]?.TotalRegistros ?? 0);
+    const rows = recordsets[1] ?? [];
+
+    return { rows, totalRegistros };
 };
 
 export const obtenerCategoriaPorId = async (id: number) => {
     const pool = await dbConnect();
-
     const result = await pool
         .request()
         .input("id", sql.Int, id)
@@ -26,7 +36,6 @@ export const obtenerCategoriaPorId = async (id: number) => {
 
 export const crearCategoria = async (nombre: string) => {
     const pool = await dbConnect();
-
     const result = await pool
         .request()
         .input("P_NOMBRE", sql.VarChar(45), nombre.trim())
@@ -37,7 +46,6 @@ export const crearCategoria = async (nombre: string) => {
 
 export const actualizarCategoria = async (id: number, nombre: string) => {
     const pool = await dbConnect();
-
     const result = await pool
         .request()
         .input("P_NOMBRE", sql.VarChar(45), nombre.trim())
@@ -49,7 +57,6 @@ export const actualizarCategoria = async (id: number, nombre: string) => {
 
 export const eliminarCategoria = async (id: number) => {
     const pool = await dbConnect();
-
     const result = await pool
         .request()
         .input("P_ID_CATEGORIA", sql.Int, id)

@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import { body, validationResult } from "express-validator";
 
 import { obtenerNumeroErrorSql } from "../utils/sqlErrors.js";
+import { obtenerPaginacion, responderPaginacionError } from "../utils/paginacion.js";
 import { obtenerGenerosService, obtenerGeneroPorIdService, crearGeneroService, actualizarGeneroService, eliminarGeneroService, } from "../services/genero.service.js";
 
 const ERRORES_NO_ENCONTRADOS = new Set([50433, 50434]);
@@ -52,14 +53,23 @@ export const validarActualizarGenero = [
         .toBoolean(),
 ];
 
-export const getGeneros = async (_req: Request, res: Response): Promise<void> => {
+export const getGeneros = async ( req: Request, res: Response ): Promise<void> => {
     try {
-        const generos = await obtenerGenerosService();
+        const { pagina, registrosPorPagina } = obtenerPaginacion(req);
+        const { data, paginacion } = await obtenerGenerosService({ pagina, registrosPorPagina });
         res.status(200).json({
             msg: "Generos obtenidos con exito",
-            data: generos,
+            data,
+            paginacion,
         });
     } catch (error: unknown) {
+        try {
+            responderPaginacionError(res, error);
+            return;
+        } catch {
+            // no es error de paginacion
+        }
+
         console.error(
             "Error al listar generos:",
             error instanceof Error ? error.message : error

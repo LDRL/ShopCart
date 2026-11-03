@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import { body, validationResult } from "express-validator";
 
 import { obtenerNumeroErrorSql } from "../utils/sqlErrors.js";
+import { obtenerPaginacion, responderPaginacionError } from "../utils/paginacion.js";
 import {
     obtenerValoresAtributoService,
     obtenerValorAtributoPorIdService,
@@ -55,23 +56,32 @@ export const validarValorAtributo = [
 ];
 
 export const getValoresAtributo = async (req: Request, res: Response): Promise<void> => {
-    const IDAtributoRaw = req.query.IDAtributo;
-
+    const IDAtributoRaw = req.query.IDAtributo ?? req.query.idAtributo;
     const IDAtributo =
-        IDAtributoRaw === undefined ? undefined : Number(IDAtributoRaw);
+        IDAtributoRaw === undefined ? null : Number(IDAtributoRaw);
 
-    if (IDAtributo !== undefined && !esIdValido(IDAtributo)) {
+    if (IDAtributo !== null && !esIdValido(IDAtributo)) {
         res.status(400).json({ msg: "El ID del atributo es invalido" });
         return;
     }
 
     try {
-        const valores = await obtenerValoresAtributoService(IDAtributo);
+        const { pagina, registrosPorPagina } = obtenerPaginacion(req);
+        const result = await obtenerValoresAtributoService(IDAtributo, {
+            pagina,
+            registrosPorPagina,
+        });
         res.status(200).json({
             msg: "Valores de atributo obtenidos con exito",
-            data: valores,
+            ...result,
         });
     } catch (error: unknown) {
+        try {
+            responderPaginacionError(res, error);
+            return;
+        } catch {
+            // no es error de paginacion
+        }
         console.error(
             "Error al listar valores de atributo:",
             error instanceof Error ? error.message : error
@@ -185,3 +195,5 @@ export const deleteValorAtributo = async (req: Request, res: Response): Promise<
         responderErrorValorAtributo(res, error, "eliminar valor de atributo");
     }
 };
+
+

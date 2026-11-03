@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { body, validationResult } from "express-validator";
 
+import { obtenerPaginacion, responderPaginacionError } from "../utils/paginacion.js";
 import {
     obtenerCategorias,
     obtenerCategoria,
@@ -16,42 +17,30 @@ const getCategorias = async (
     req: Request,
     res: Response
 ): Promise<void> => {
-    const { page = "", limite = "10", search = "" } = req.query;
-
-    const paginated = page !== "";
-    const pageNumber = paginated ? Number(page) : 0;
-    const limitNumber = paginated ? Number(limite) : 0;
-
-    if (
-        (paginated &&
-            (!Number.isSafeInteger(pageNumber) ||
-                pageNumber < 1 ||
-                !Number.isSafeInteger(limitNumber) ||
-                limitNumber < 1 ||
-                limitNumber > 100)) ||
-        typeof search !== "string"
-    ) {
-        res.status(400).json({
-            msg: "Parámetros de búsqueda o paginación inválidos",
-        });
-        return;
-    }
-
     try {
-        const resultado = await obtenerCategorias(String(page), String(limite), String(search));
-
+        const { pagina, registrosPorPagina } = obtenerPaginacion(req);
+        const result = await obtenerCategorias({
+            pagina,
+            registrosPorPagina,
+            buscar: req.query.buscar?.toString() || req.query.q?.toString() || null,
+        });
         res.status(200).json({
-            msg: "Categorías obtenidas con éxito",
-            ...resultado,
+            msg: "Categor�as obtenidas con �xito",
+            ...result,
         });
     } catch (error: unknown) {
+        try {
+            responderPaginacionError(res, error);
+            return;
+        } catch {
+            // no es error de paginacion
+        }
         console.error(
-            "Error al listar categorías:",
+            "Error al listar categor�as:",
             error instanceof Error ? error.message : error
         );
-
         res.status(500).json({
-            msg: "Hubo un error al obtener las categorías",
+            msg: "Hubo un error al obtener las categor�as",
         });
     }
 };
@@ -244,3 +233,5 @@ export {
     deleteCategoria,
     validarCategoriaProducto,
 };
+
+

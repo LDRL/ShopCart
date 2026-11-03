@@ -9,6 +9,8 @@ const router = Router();
 router.use(authenticate);
 router.use(permitirRoles(1, 2));
 
+router.get( "/", pedidoCtrl.validarFiltrosDevoluciones, pedidoCtrl.getDevoluciones );
+
 router.patch(
     "/:IDDevolucion/estado",
     pedidoCtrl.validarCambiarEstadoDevolucion,

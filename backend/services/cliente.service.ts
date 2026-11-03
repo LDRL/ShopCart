@@ -7,6 +7,8 @@ import {
     type ClienteActualizarInput,
     type ClienteCrearInput,
 } from "../repositories/cliente.repository.js";
+import { generarTokenInvitado } from "../utils/invitado.js";
+
 import { hashPassword } from "../utils/auth.js";
 
 export const crearClienteService = async (input: ClienteCrearInput) => {
@@ -30,6 +32,10 @@ export const actualizarClienteService = async (
 export const eliminarClienteService = async (IDCliente: number) => {
     return await eliminarClienteRepo(IDCliente);
 };
+
+export const generarTokenInvitadoService = (): { token: string } => ({
+    token: generarTokenInvitado(),
+});
 
 export const listarClientesService = async () => {
     return await listarClientesRepo();

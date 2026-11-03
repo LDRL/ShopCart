@@ -1,19 +1,19 @@
 import { Router } from "express";
 
-import { authenticate } from "../middleware/auth.js";
+import { authenticate, authenticateOptional } from "../middleware/auth.js";
 import { permitirRoles } from "../middleware/roles.js";
 import * as cuponCtrl from "../controllers/cupon.controller.js";
 
 const router = Router();
 
-router.use(authenticate);
-
 router.post(
     "/validar",
+    authenticateOptional,
     cuponCtrl.validarAplicacionCupon,
     cuponCtrl.postValidarCupon
 );
 
+router.use(authenticate);
 router.use(permitirRoles(1, 2));
 
 router.get("/", cuponCtrl.getCupones);

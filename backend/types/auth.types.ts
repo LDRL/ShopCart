@@ -9,4 +9,5 @@ export interface AuthTokenPayload extends JwtPayload {
 
 export interface AuthRequest extends Request {
     user?: UsuarioAutenticado;
+    tokenInvitado?: string;
 }

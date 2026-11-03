@@ -1,13 +1,12 @@
-import {
-    listarAtributosRepo,
-    obtenerAtributoPorIdRepo,
-    crearAtributoRepo,
-    actualizarAtributoRepo,
-    eliminarAtributoRepo,
-} from "../repositories/atributo.repository.js";
+import { listarAtributosRepo, obtenerAtributoPorIdRepo, crearAtributoRepo, actualizarAtributoRepo, eliminarAtributoRepo, type PaginacionParams, } from "../repositories/atributo.repository.js";
+import { construirPaginacion } from "../utils/paginacion.js";
 
-export const obtenerAtributosService = async () => {
-    return await listarAtributosRepo();
+export const obtenerAtributosService = async (paginacion: PaginacionParams) => {
+    const { rows, totalRegistros } = await listarAtributosRepo(paginacion);
+    return {
+        data: rows,
+        paginacion: construirPaginacion(totalRegistros, paginacion.pagina ?? null, paginacion.registrosPorPagina ?? null),
+    };
 };
 
 export const obtenerAtributoPorIdService = async (IDAtributo: number) => {

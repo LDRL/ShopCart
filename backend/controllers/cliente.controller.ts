@@ -3,7 +3,7 @@ import { body, validationResult } from "express-validator";
 
 import { obtenerNumeroErrorSql } from "../utils/sqlErrors.js";
 import { crearClienteService, actualizarClienteService, eliminarClienteService, listarClientesService,
-    obtenerClientePorIdService } from "../services/cliente.service.js";
+    obtenerClientePorIdService, generarTokenInvitadoService } from "../services/cliente.service.js";
 
 const ERRORES_CONFLICTO = new Set([50721, 50722]);
 const ERRORES_NO_ENCONTRADOS = new Set([50723]);
@@ -204,5 +204,14 @@ export const postCliente = async ( req: Request, res: Response ): Promise<void> 
     } catch (error: unknown) {
         responderErrorCliente(res, error, "crear cliente");
     }
+};
+
+export const postTokenInvitado = (_req: Request, res: Response): void => {
+    const data = generarTokenInvitadoService();
+
+    res.status(201).json({
+        msg: "Token de invitado generado correctamente",
+        data,
+    });
 };
 

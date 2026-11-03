@@ -22,7 +22,8 @@ export interface LineaCarritoValidacion {
 
 export interface ValidarCuponInput {
     codigo: string;
-    IDUsuario: number;
+    IDUsuario: number | null;
+    tokenInvitado?: string | null;
     lineas: LineaCarritoValidacion[];
 }
 
@@ -110,19 +111,34 @@ export const eliminarCuponRepo = async (IDCupon: number) => {
     return result.recordset?.[0] ?? null;
 };
 
-export const listarCuponesRepo = async () => {
+export interface PaginacionParams {
+    pagina?: number | null;
+    registrosPorPagina?: number | null;
+}
+
+export const listarCuponesRepo = async (
+    params: PaginacionParams & { buscar?: string | null } = {}
+) => {
     const pool = await dbConnect();
 
     const result = await pool
         .request()
+        .input("Pagina", sql.Int, params.pagina ?? null)
+        .input("RegistrosPorPagina", sql.Int, params.registrosPorPagina ?? null)
+        .input("Buscar", sql.VarChar(50), params.buscar ?? null)
         .execute("dbo.SP_Cupones_ObtenerCupones");
 
-    const rows = result.recordset ?? [];
+    const recordsets = Array.isArray(result.recordsets) ? result.recordsets : [];
+    const totalRegistros = Number(recordsets[0]?.[0]?.TotalRegistros ?? 0);
+    const rows = recordsets[1] ?? [];
 
-    return rows.map((row) => ({
-        ...row,
-        categorias: parsearCategorias(row.categorias),
-    }));
+    return {
+        rows: rows.map((row: any) => ({
+            ...row,
+            categorias: parsearCategorias(row.categorias),
+        })),
+        totalRegistros,
+    };
 };
 
 export const obtenerCuponPorIdRepo = async (IDCupon: number) => {
@@ -155,9 +171,11 @@ export const validarCuponRepo = async (
         .input("Codigo", sql.VarChar(50), input.codigo)
         .input("IDUsuario", sql.Int, input.IDUsuario)
         .input("Lineas", sql.NVarChar(sql.MAX), JSON.stringify(input.lineas))
+        .input("TokenInvitado", sql.VarChar(64), input.tokenInvitado ?? null)
         .execute("dbo.SP_Cupones_ValidarCupon");
 
     return (
         (result.recordset?.[0] as CuponValidacionResultado | undefined) ?? null
     );
 };
+

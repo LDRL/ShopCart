@@ -1,3 +1,4 @@
+import { construirPaginacion } from "../utils/paginacion.js";
 import {
     listarCategoriasAtributosRepo,
     obtenerCategoriaAtributoPorIdRepo,
@@ -6,8 +7,19 @@ import {
     eliminarCategoriaAtributoRepo,
 } from "../repositories/categoriaAtributo.repository.js";
 
-export const obtenerCategoriasAtributosService = async (IDCategoria?: number) => {
-    return await listarCategoriasAtributosRepo(IDCategoria);
+export const obtenerCategoriasAtributosService = async (
+    IDCategoria: number | null = null,
+    paginacion: { pagina?: number | null; registrosPorPagina?: number | null } = {}
+) => {
+    const { rows, totalRegistros } = await listarCategoriasAtributosRepo(IDCategoria, paginacion);
+    return {
+        data: rows,
+        paginacion: construirPaginacion(
+            totalRegistros,
+            paginacion.pagina ?? null,
+            paginacion.registrosPorPagina ?? null
+        ),
+    };
 };
 
 export const obtenerCategoriaAtributoPorIdService = async ( IDCategoriaAtributo: number ) => {
@@ -38,3 +50,8 @@ export const eliminarCategoriaAtributoService = async (
 ) => {
     return await eliminarCategoriaAtributoRepo(IDCategoriaAtributo);
 };
+
+
+
+
+

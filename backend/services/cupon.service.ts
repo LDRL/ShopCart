@@ -1,3 +1,4 @@
+import { construirPaginacion } from "../utils/paginacion.js";
 import {
     actualizarCuponRepo,
     crearCuponRepo,
@@ -24,8 +25,18 @@ export const eliminarCuponService = async (IDCupon: number) => {
     return await eliminarCuponRepo(IDCupon);
 };
 
-export const listarCuponesService = async () => {
-    return await listarCuponesRepo();
+export const listarCuponesService = async (
+    params: { pagina?: number | null; registrosPorPagina?: number | null; buscar?: string | null } = {}
+) => {
+    const { rows, totalRegistros } = await listarCuponesRepo(params);
+    return {
+        data: rows,
+        paginacion: construirPaginacion(
+            totalRegistros,
+            params.pagina ?? null,
+            params.registrosPorPagina ?? null
+        ),
+    };
 };
 
 export const obtenerCuponPorIdService = async (IDCupon: number) => {
@@ -41,3 +52,6 @@ export const obtenerCuponPorIdService = async (IDCupon: number) => {
 export const validarCuponService = async (input: ValidarCuponInput) => {
     return await validarCuponRepo(input);
 };
+
+
+

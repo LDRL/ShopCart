@@ -12,6 +12,17 @@ interface VarianteDB {
     [key: string]: unknown;
 }
 
+/// parametros para filtro de obtener productos
+export interface ProductList {
+    pagina?: number | null;
+    registrosPorPagina?: number | null;
+    nombre?: string | null;
+    idGenero?: number | null;
+    idCategoria?: number | null;
+    precioMinimo?: number | null;
+    precioMaximo?: number | null;
+}
+
 const extraerResultado = (result: { recordsets?: unknown }) => {
     const recordsets = Array.isArray(result.recordsets) ? result.recordsets : [];
     const productoRows = (recordsets[0] ?? []) as Array<Record<string, unknown>>;
@@ -29,12 +40,60 @@ const serializarVariantes = (variantes: VarianteProductoPayload[] | null) =>
 const serializarImagenes = (imagenes: ImagenProductoPayload[] | null) =>
     imagenes === null ? null : JSON.stringify(imagenes);
 
-export const listarProductosRepo = async () => {
+export const listarProductosRepo = async (filtros: ProductList = {}) => {
     const pool = await dbConnect();
     const result = await pool
         .request()
+        .input("Pagina", sql.Int, filtros.pagina)
+        .input("RegistrosPorPagina", sql.Int, filtros.registrosPorPagina)
+        .input("Nombre", sql.NVarChar(150), filtros.nombre)
+        .input("IDGenero", sql.Int, filtros.idGenero)
+        .input("IDCategoria", sql.Int, filtros.idCategoria)
+        .input("PrecioMinimo", sql.Decimal(18, 2), filtros.precioMinimo)
+        .input("PrecioMaximo", sql.Decimal(18, 2), filtros.precioMaximo)
         .execute("dbo.SP_Producto_ListarProductos");
-    return result.recordset ?? [];
+    
+
+    const recordsets = Array.isArray(result.recordsets)
+        ? result.recordsets
+        : [];
+
+    const total = Number( recordsets[0]?.[0]?.TotalRegistros ?? 0 );
+    const productos = recordsets[1] ?? [];
+    return {
+        total,
+        productos
+    };
+};
+
+
+
+export const obtenerPedidoRepo = async (
+    IDPedido: number,
+    IDCliente?: number | null,
+    tokenInvitado?: string | null
+) => {
+    const pool = await dbConnect();
+
+    const result = await pool
+        .request()
+        .input("IDPedido", sql.Int, IDPedido)
+        .input("IDCliente", sql.Int, IDCliente ?? null)
+        .input("TokenInvitado", sql.VarChar(64), tokenInvitado ?? null)
+        .execute("dbo.SP_Pedidos_ObtenerPedido");
+
+    const recordsets = Array.isArray(result.recordsets) ? result.recordsets : [];
+    const pedido = recordsets[0]?.[0] ?? null;
+
+    if (!pedido) {
+        return null;
+    }
+
+    return {
+        pedido,
+        detalles: recordsets[1] ?? [],
+        historial: recordsets[2] ?? [],
+    };
 };
 
 export const obtenerProductoPorIdRepo = async (id: number) => {

@@ -2,10 +2,12 @@ import type { Request, Response } from "express";
 import { validationResult } from "express-validator";
 import { eliminarArchivosSubidos } from "../middleware/normalizarProducto.js";
 import { obtenerNumeroErrorSql } from "../utils/sqlErrors.js";
+import { obtenerPaginacion, responderPaginacionError } from "../utils/paginacion.js";
 import { obtenerProductosService, obtenerProductoPorIdService, crearProductoService, actualizarProductoService, 
     eliminarProductoService, } from "../services/producto.service.js";
 
 import type { ActualizarProductoPayload, CrearProductoPayload, } from "../types/producto.types.js";
+import { ProductList } from "../repositories/producto.repository.js";
 
 const ERRORES_NO_ENCONTRADOS = new Set([50301]);
 const ERRORES_CONFLICTO = new Set([50205, 50213, 50306, 50313]);
@@ -35,16 +37,33 @@ const responderErrorProducto = ( req: Request, res: Response, error: unknown, co
     res.status(500).json({ msg: "Hubo un error al procesar el producto" });
 };
 
-export const getProductos = async (_req: Request, res: Response): Promise<void> => {
+export const getProductos = async (req: Request, res: Response): Promise<void> => {
     try {
-        const productos = await obtenerProductosService();
-        res.status(200).json({
-            msg: "Productos obtenidos con éxito",
-            data: productos,
-        });
+        const { pagina, registrosPorPagina } = obtenerPaginacion(req);
+        const filtros: ProductList = {
+            pagina,
+            registrosPorPagina,
+            nombre: req.query.nombre?.toString() || null,
+            idGenero: req.query.idGenero ? Number(req.query.idGenero) : null,
+            idCategoria: req.query.idCategoria ? Number(req.query.idCategoria) : null,
+            precioMinimo: req.query.precioMinimo ? Number(req.query.precioMinimo) : null,
+            precioMaximo: req.query.precioMaximo ? Number(req.query.precioMaximo) : null,
+        };
+
+        const productos = await obtenerProductosService(filtros);
+
+        res.status(200).json(productos);
     } catch (error: unknown) {
-        console.error("Error al listar productos:", error instanceof Error ? error.message : error);
-        res.status(500).json({ msg: "Hubo un error al obtener los productos" });
+        try {
+            responderPaginacionError(res, error);
+            return;
+        } catch {
+            // no es error de paginacion
+        }
+        console.error("Error al listar productos:", error);
+        res.status(500).json({
+            message: "Hubo un error al obtener los productos",
+        });
     }
 };
 
@@ -286,3 +305,4 @@ export const transformarProducto = (
         imagenes
     };
 };
+

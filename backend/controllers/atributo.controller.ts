@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import { body, validationResult } from "express-validator";
 
 import { obtenerNumeroErrorSql } from "../utils/sqlErrors.js";
+import { obtenerPaginacion, responderPaginacionError } from "../utils/paginacion.js";
 import {
     obtenerAtributosService,
     obtenerAtributoPorIdService,
@@ -69,15 +70,22 @@ export const validarActualizarAtributo = [
         .withMessage("estado debe ser booleano")
         .toBoolean(),
 ];
-
-export const getAtributos = async (_req: Request, res: Response): Promise<void> => {
+export const getAtributos = async (req: Request, res: Response): Promise<void> => {
     try {
-        const atributos = await obtenerAtributosService();
+        const { pagina, registrosPorPagina } = obtenerPaginacion(req);
+        const { data, paginacion } = await obtenerAtributosService({ pagina, registrosPorPagina });
         res.status(200).json({
             msg: "Atributos obtenidos con exito",
-            data: atributos,
+            data,
+            paginacion,
         });
     } catch (error: unknown) {
+        try {
+            responderPaginacionError(res, error);
+            return;
+        } catch {
+            // no es error de paginacion
+        }
         console.error(
             "Error al listar atributos:",
             error instanceof Error ? error.message : error
@@ -193,3 +201,4 @@ export const deleteAtributo = async (req: Request, res: Response): Promise<void>
         responderErrorAtributo(res, error, "eliminar atributo");
     }
 };
+

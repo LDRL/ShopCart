@@ -2,6 +2,7 @@ import type { Response } from "express";
 import { body, validationResult } from "express-validator";
 
 import { obtenerNumeroErrorSql } from "../utils/sqlErrors.js";
+import { obtenerPaginacion, responderPaginacionError } from "../utils/paginacion.js";
 import type { AuthRequest } from "../types/auth.types.js";
 import {
     registrarMovimientoService,
@@ -164,13 +165,22 @@ export const getKardex = async (
     }
 
     try {
-        const data = await obtenerKardexService(IDProductoVariante);
-
+        const { pagina, registrosPorPagina } = obtenerPaginacion(req as any);
+        const result = await obtenerKardexService(IDProductoVariante, {
+            pagina,
+            registrosPorPagina,
+        });
         res.status(200).json({
             msg: "Kardex obtenido con exito",
-            data,
+            ...result,
         });
     } catch (error: unknown) {
+        try {
+            responderPaginacionError(res, error);
+            return;
+        } catch {
+            // no es error de paginacion
+        }
         console.error(
             "Error al obtener kardex:",
             error instanceof Error ? error.message : error
@@ -178,3 +188,5 @@ export const getKardex = async (
         res.status(500).json({ msg: "Hubo un error al obtener el kardex" });
     }
 };
+
+

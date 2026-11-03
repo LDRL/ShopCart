@@ -1,14 +1,22 @@
 import { dbConnect, sql } from "../config/db/connection.js";
 
-export const listarValoresAtributoRepo = async (IDAtributo?: number) => {
+export const listarValoresAtributoRepo = async (
+    IDAtributo: number | null = null,
+    params: { pagina?: number | null; registrosPorPagina?: number | null } = {}
+) => {
     const pool = await dbConnect();
-
     const result = await pool
         .request()
-        .input("IDAtributo", sql.Int, IDAtributo ?? null)
+        .input("Pagina", sql.Int, params.pagina ?? null)
+        .input("RegistrosPorPagina", sql.Int, params.registrosPorPagina ?? null)
+        .input("IDAtributo", sql.Int, IDAtributo)
         .execute("dbo.SP_Producto_ObtenerValoresAtributo");
 
-    return result.recordset ?? [];
+    const recordsets = Array.isArray(result.recordsets) ? result.recordsets : [];
+    const totalRegistros = Number(recordsets[0]?.[0]?.TotalRegistros ?? 0);
+    const rows = recordsets[1] ?? [];
+
+    return { rows, totalRegistros };
 };
 
 export const obtenerValorAtributoPorIdRepo = async (IDValorAtributo: number) => {
@@ -61,3 +69,5 @@ export const eliminarValorAtributoRepo = async (IDValorAtributo: number) => {
 
     return result.recordset?.[0] ?? null;
 };
+
+

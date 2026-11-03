@@ -1,3 +1,4 @@
+import { construirPaginacion } from "../utils/paginacion.js";
 import crypto from "node:crypto";
 
 import {
@@ -6,6 +7,7 @@ import {
     crearProductoRepo,
     actualizarProductoRepo,
     eliminarProductoRepo,
+    ProductList,
 } from "../repositories/producto.repository.js";
 import type {
     ImagenProductoPayload,
@@ -58,8 +60,24 @@ const prepararVariantes = ( nombre: string, IDCategoria: number, IDGenero: numbe
         Precio: variante.Precio ?? precioBase,
     }));
 
-export const obtenerProductosService = async () => {
-    return await listarProductosRepo();
+export const obtenerProductosService = async (filtros: ProductList = {}) => {
+    const resultado = await listarProductosRepo(filtros);
+
+    const total = resultado.total;
+    const limit = filtros.registrosPorPagina ?? total;
+    const currentPage = filtros.pagina ?? 1;
+
+    return {
+        data: resultado.productos,
+        message: "Lista de productos",
+        paginacion: construirPaginacion(total, filtros.pagina ?? null, filtros.registrosPorPagina ?? null),
+        meta: {
+            total,
+            totalPages: limit > 0 ? Math.ceil(total / limit) : 0,
+            currentPage,
+            limit,
+        },
+    };
 };
 
 export const obtenerProductoPorIdService = async (id: number) => {
@@ -130,3 +148,6 @@ export const actualizarProductoService = async (
 export const eliminarProductoService = async (IDProducto: number) => {
     return await eliminarProductoRepo(IDProducto);
 };
+
+
+

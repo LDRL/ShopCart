@@ -2,6 +2,8 @@ import type { Request, Response } from "express";
 import { body, validationResult } from "express-validator";
 
 import { esDuplicadoSql, obtenerNumeroErrorSql } from "../utils/sqlErrors.js";
+import { obtenerPaginacion, responderPaginacionError } from "../utils/paginacion.js";
+import { esTokenInvitadoValido, tokenInvitadoDesdeRequest } from "../utils/invitado.js";
 import {
     actualizarCuponService,
     crearCuponService,
@@ -187,17 +189,27 @@ export const validarAplicacionCupon = [
 ];
 
 export const getCupones = async (
-    _req: Request,
+    req: Request,
     res: Response
 ): Promise<void> => {
     try {
-        const data = await listarCuponesService();
-
+        const { pagina, registrosPorPagina } = obtenerPaginacion(req);
+        const result = await listarCuponesService({
+            pagina,
+            registrosPorPagina,
+            buscar: req.query.buscar?.toString() || req.query.q?.toString() || null,
+        });
         res.status(200).json({
             msg: "Cupones obtenidos con exito",
-            data,
+            ...result,
         });
     } catch (error: unknown) {
+        try {
+            responderPaginacionError(res, error);
+            return;
+        } catch {
+            // no es error de paginacion
+        }
         responderErrorCupon(res, error, "obtener cupones");
     }
 };
@@ -242,16 +254,7 @@ export const postCupon = async (
     }
 
     const {
-        codigo,
-        tipoDescuento,
-        valorDescuento,
-        montoMinimo,
-        limiteUsosTotal,
-        limiteUsosCliente,
-        fechaInicio,
-        fechaFin,
-        estado,
-        categorias,
+        codigo, tipoDescuento, valorDescuento, montoMinimo, limiteUsosTotal, limiteUsosCliente, fechaInicio, fechaFin, estado, categorias,
     } = req.body as {
         codigo: string;
         tipoDescuento: TipoDescuento;
@@ -387,10 +390,22 @@ export const postValidarCupon = async (
         return;
     }
 
-    const IDUsuario = req.user?.IDUsuario;
+    const IDUsuario = req.user?.IDUsuario ?? null;
+    const tokenInvitado = IDUsuario === null
+        ? tokenInvitadoDesdeRequest(req)
+        : null;
 
-    if (typeof IDUsuario !== "number") {
-        res.status(401).json({ error: "No autorizado" });
+    if (IDUsuario === null && !tokenInvitado) {
+        res.status(401).json({
+            error: "No autorizado: sesion o token de invitado requerido",
+        });
+        return;
+    }
+
+    if (tokenInvitado && !esTokenInvitadoValido(tokenInvitado)) {
+        res.status(400).json({
+            msg: "tokenInvitado invalido: use entre 16 y 64 caracteres alfanumericos, guion o guion bajo",
+        });
         return;
     }
 
@@ -406,6 +421,7 @@ export const postValidarCupon = async (
         const data = await validarCuponService({
             codigo,
             IDUsuario,
+            tokenInvitado,
             lineas,
         });
 
@@ -417,3 +433,5 @@ export const postValidarCupon = async (
         responderErrorCupon(res, error, "validar cupon");
     }
 };
+
+

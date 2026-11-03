@@ -1,3 +1,4 @@
+import { construirPaginacion } from "../utils/paginacion.js";
 import {
     crearProveedorRepo,
     actualizarProveedorRepo,
@@ -23,8 +24,18 @@ export const eliminarProveedorService = async (IDProveedor: number) => {
     return await eliminarProveedorRepo(IDProveedor);
 };
 
-export const listarProveedoresService = async () => {
-    return await listarProveedoresRepo();
+export const listarProveedoresService = async (
+    params: { pagina?: number | null; registrosPorPagina?: number | null; buscar?: string | null } = {}
+) => {
+    const { rows, totalRegistros } = await listarProveedoresRepo(params);
+    return {
+        data: rows,
+        paginacion: construirPaginacion(
+            totalRegistros,
+            params.pagina ?? null,
+            params.registrosPorPagina ?? null
+        ),
+    };
 };
 
 export const obtenerProveedorPorIdService = async (IDProveedor: number) => {
@@ -36,3 +47,5 @@ export const obtenerProveedorPorIdService = async (IDProveedor: number) => {
 
     return proveedor;
 };
+
+

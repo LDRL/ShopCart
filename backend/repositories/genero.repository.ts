@@ -1,13 +1,24 @@
 import { dbConnect, sql } from "../config/db/connection.js";
 
-export const listarGenerosRepo = async () => {
+export interface PaginacionParams {
+    pagina?: number | null;
+    registrosPorPagina?: number | null;
+}
+
+export const listarGenerosRepo = async (params: PaginacionParams = {}) => {
     const pool = await dbConnect();
 
     const result = await pool
         .request()
+        .input("Pagina", sql.Int, params.pagina ?? null)
+        .input("RegistrosPorPagina", sql.Int, params.registrosPorPagina ?? null)
         .execute("dbo.SP_Producto_ObtenerGeneros");
 
-    return result.recordset ?? [];
+    const recordsets = Array.isArray(result.recordsets) ? result.recordsets : [];
+    const totalRegistros = Number(recordsets[0]?.[0]?.TotalRegistros ?? 0);
+    const generos = recordsets[1] ?? [];
+
+    return { rows: generos, totalRegistros };
 };
 
 export const obtenerGeneroPorIdRepo = async (IDGenero: number) => {
