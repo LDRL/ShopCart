@@ -2,6 +2,7 @@
 
 import "dotenv/config";
 import Server from "./config/server.js";
+import { iniciarLiberacionReservasVencidas } from "./services/reservaExpiration.service.js";
 
 const server = new Server();
 
@@ -9,6 +10,7 @@ const main = async (): Promise<void> => {
     try {
         await server.conectarDB();
         server.listen();
+        iniciarLiberacionReservasVencidas();
     } catch (error: unknown) {
         if (error instanceof Error) {
             console.error(

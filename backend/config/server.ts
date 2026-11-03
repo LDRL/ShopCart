@@ -24,7 +24,9 @@ import inventarioRouter from "../routes/inventario.js";
 import proveedoresRouter from "../routes/proveedores.js";
 import comprasRouter from "../routes/compras.js";
 import cuponesRouter from "../routes/cupones.js";
-
+import pedidosRouter from "../routes/pedidos.js";
+import devolucionesRouter from "../routes/devoluciones.js";
+import clientesRouter from "../routes/cliente.js";
 
 class Server {
     private app: Application;
@@ -44,6 +46,9 @@ class Server {
         proveedores: '/api/proveedores',
         compras: '/api/compras',
         cupones: '/api/cupones',
+        pedidos: '/api/pedidos',
+        devoluciones: '/api/devoluciones',
+        clientes: '/api/clientes',
         
     };
 
@@ -104,6 +109,9 @@ class Server {
         this.app.use(this.paths.proveedores, proveedoresRouter);
         this.app.use(this.paths.compras, comprasRouter);
         this.app.use(this.paths.cupones, cuponesRouter);
+        this.app.use(this.paths.pedidos, pedidosRouter);
+        this.app.use(this.paths.devoluciones, devolucionesRouter);
+        this.app.use(this.paths.clientes, clientesRouter);
         
 
         // Middleware 404: debe ir después de todas las rutas.
