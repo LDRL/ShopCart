@@ -28,6 +28,7 @@ import pedidosRouter from "../routes/pedidos.js";
 import devolucionesRouter from "../routes/devoluciones.js";
 import clientesRouter from "../routes/cliente.js";
 import publicRouter from "../routes/public.js";
+import dashboardRouter from "../routes/dashboard.js";
 
 class Server {
     private app: Application;
@@ -51,6 +52,7 @@ class Server {
         devoluciones: '/api/devoluciones',
         clientes: '/api/clientes',
         public: '/api/public',
+        dashboard: '/api/dashboard',
     };
 
     constructor() {
@@ -114,6 +116,7 @@ class Server {
         this.app.use(this.paths.devoluciones, devolucionesRouter);
         this.app.use(this.paths.clientes, clientesRouter);
         this.app.use(this.paths.public, publicRouter);
+        this.app.use(this.paths.dashboard, dashboardRouter);
 
         // Middleware 404: debe ir después de todas las rutas.
         this.app.use(

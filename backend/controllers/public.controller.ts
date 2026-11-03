@@ -135,6 +135,18 @@ export const getAtributosPublic = async (req: Request, res: Response): Promise<v
     }
 };
 
+export const getConfigPublic = async (_req: Request, res: Response): Promise<void> => {
+    const iva = Number(process.env.IVA_PORCENTAJE ?? 12);
+    res.status(200).json({
+        msg: "Configuracion obtenida con exito",
+        data: {
+            moneda: "GTQ",
+            ivaPorcentaje: Number.isFinite(iva) ? iva : 12,
+            ivaIncluido: true,
+        },
+    });
+};
+
 export const getValoresAtributoPublic = async (req: Request, res: Response): Promise<void> => {
     const idaAtributoRaw = req.query.IDAtributo ?? req.query.idAtributo;
     const idaAtributo = idaAtributoRaw === undefined ? null : Number(idaAtributoRaw);

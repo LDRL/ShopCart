@@ -99,6 +99,7 @@ export const crearPedidoRepo = async (input: CrearPedidoInput) => {
         .input("CorreoContacto", sql.VarChar(150), input.correo ?? null)
         .input("MinutosExpiracion", sql.Int, input.minutosExpiracion ?? 15)
         .input("TokenInvitado", sql.VarChar(64), input.tokenInvitado ?? null)
+        .input("IvaPorcentaje", sql.Decimal(5, 2), Number(process.env.IVA_PORCENTAJE ?? 12))
         .execute("dbo.SP_Pedidos_CrearPedido");
 
     return result.recordset?.[0] ?? null;

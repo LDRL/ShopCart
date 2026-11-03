@@ -14,5 +14,6 @@ router.get("/categorias", publicCtrl.getCategoriasPublic);
 router.get("/generos", publicCtrl.getGenerosPublic);
 router.get("/atributos", publicCtrl.getAtributosPublic);
 router.get("/valores-atributos", publicCtrl.getValoresAtributoPublic);
+router.get("/config", publicCtrl.getConfigPublic);
 
 export default router;
