@@ -1,0 +1,128 @@
+:root {
+  color-scheme: light;
+
+  /* Colores base */
+  --color-primary: #1976d2;
+  --color-secondary: #ec4899;
+
+  /* Fondos  generales */
+  --bg-page: #f8fafc;
+  --bg-header: #fff;
+  --bg-sidebar: #1f2937;
+
+  /* Texto */
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --text-white: #ffffff;
+
+  /* Botones */
+  --button-primary-bg: var(--color-primary);
+  --button-primary-hover: #1565c0;
+  --button-primary-text: var(--text-white);
+
+  /* Header */
+  --header-bg: var(--bg-header);
+  --header-text: var(--text-primary);
+
+  --vz-secondary-bg: #fff;
+  --vz-page-title-box-shadow: 0 3px 3px rgba(56, 65, 74, 0.1);
+  --vz-page-title-border: none;
+
+  /* ========================================
+     Sidebar
+  ======================================== */
+  --sidebar-bg: #21252b;
+  --sidebar-container-bg: #272727;
+  --sidebar-text: var(--text-white);
+
+  --sidebar-hover-bg: rgb(255 255 255 / 0.08);
+  --sidebar-active-bg: rgb(255 255 255 / 0.05);
+
+  --sidebar-active-color: #1976d2;
+  --sidebar-active-indicator: #1976d2;
+
+  --sidebar-submenu-bg: #252831;
+  --sidebar-submenu-text: #f5f5f5;
+  --sidebar-submenu-hover-bg: var(--color-primary);
+
+  --sidebar-border-color: rgb(0 0 0 / 0.10);
+
+  --sidebar-scrollbar: #434343;
+  --sidebar-scrollbar-hover: #555555;
+
+  /* Botón abrir/cerrar sidebar */
+  --sidebar-toggle-bg: #000000;
+  --sidebar-toggle-text: var(--text-white);
+  --sidebar-toggle-shadow:
+    0 4px 6px rgb(0 0 0 / 0.10),
+    0 1px 3px rgb(0 0 0 / 0.08);
+
+  /* Backdrop móvil */
+  --sidebar-backdrop-bg: rgb(0 0 0 / 0.50);
+
+  /* Menú hamburguesa */
+  --hamburger-hover-bg: rgb(2 132 199 / 0.1);
+
+  /* Links especiales */
+  --sidebar-link-bg: #0284c7;
+  --sidebar-link-text: var(--text-white);
+  --sidebar-link-hover-bg: #0369a1; 
+
+  /* para los IconButton*/
+
+  /* Success */
+  --color-success: #16a34a;
+  --color-success-hover: #15803d;
+  --color-success-subtle-bg: rgb(22 163 74 / 0.15);
+  --color-success-subtle-hover-bg: rgb(22 163 74 / 0.30);
+
+  /* Error */
+  --color-error: #dc2626;
+  --color-error-hover: #b91c1c;
+  --color-error-subtle-bg: rgb(220 38 38 / 0.15);
+  --color-error-subtle-hover-bg: rgb(220 38 38 / 0.30);
+}
+
+/* ========================================
+   Modo oscuro (se activa con data-theme="dark")
+======================================== */
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  /* Colores base */
+  --color-primary: #64b5f6;
+  --color-secondary: #f472b6;
+
+  /* Fondos generales */
+  --bg-page: #111827;
+  --bg-header: #1f2937;
+  --bg-sidebar: #0f172a;
+
+  /* Texto */
+  --text-primary: #f9fafb;
+  --text-secondary: #9ca3af;
+
+  /* Botones */
+  --button-primary-bg: var(--color-primary);
+  --button-primary-hover: #42a5f5;
+  --button-primary-text: #0b1220;
+
+  /* Header */
+  --header-bg: var(--bg-header);
+  --header-text: var(--text-primary);
+
+  --vz-secondary-bg: #1f2937;
+
+  /* Sidebar */
+  --sidebar-bg: #0f172a;
+  --sidebar-container-bg: #0b1220;
+  --sidebar-border-color: rgb(255 255 255 / 0.10);
+
+  /* Success */
+  --color-success: #4ade80;
+  --color-success-hover: #22c55e;
+
+  /* Error */
+  --color-error: #f87171;
+  --color-error-hover: #ef4444;
+}
