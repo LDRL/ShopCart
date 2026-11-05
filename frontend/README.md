@@ -56,7 +56,7 @@ Si `VITE_API_URL` queda vacío o sin definir, el cliente usa `/api` por defecto.
 | Ruta | Acceso |
 |---|---|
 | `/login` | Pública |
-| `/tienda` | Pública (ejemplo: categorías) |
+| `/tienda` | Pública (menú de géneros + categorías) |
 | `/dashboard/*` | Protegida por `AuthGuard` |
 
 La raíz `/` redirige a `/dashboard`; el guard decide si muestra el panel o el

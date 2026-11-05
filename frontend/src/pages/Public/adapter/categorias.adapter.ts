@@ -23,3 +23,11 @@ export const categoriasAdapter = (
   categorias: response.data.map(toCategoria),
   paginacion: response.paginacion,
 })
+
+/** Categorias navegables del submenu: sin paginacion y sin las inactivas. */
+export const categoriasMenuAdapter = (
+  response: CategoriasResponse,
+): Categoria[] =>
+  response.data
+    .map(toCategoria)
+    .filter((categoria) => categoria.activa)

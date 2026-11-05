@@ -1,3 +1,3 @@
 export { PublicPage } from './PublicPage'
-export type { Categoria } from './domain'
-export type { CategoriaDto, Paginacion } from './models'
+export type { Categoria, FiltroCatalogo, Genero } from './domain'
+export type { CategoriaDto, GeneroDto, Paginacion } from './models'

@@ -19,7 +19,9 @@ export interface CategoriasResponse {
 }
 
 export interface CategoriasQuery {
-  pagina: number
-  registrosPorPagina: number
+  // El backend responde 400 si se envia solo uno de los dos parametros de
+  // paginacion, asi que ambos son opcionales y se envian juntos o ninguno.
+  pagina?: number
+  registrosPorPagina?: number
   buscar?: string
 }
