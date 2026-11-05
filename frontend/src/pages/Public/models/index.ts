@@ -5,3 +5,17 @@ export type {
   Paginacion,
 } from './categorias.models'
 export type { GeneroDto, GenerosResponse } from './generos.models'
+export type {
+  AtributoDetalleDto,
+  ImagenDetalleDto,
+  ProductoDetalleDto,
+  ProductoDetalleResponse,
+  VarianteDetalleDto,
+} from './productoDetalle.models'
+export type {
+  AtributoVarianteDto,
+  ProductoShopDto,
+  ProductosShopQuery,
+  ProductosShopResponse,
+  VarianteShopDto,
+} from './productos.models'

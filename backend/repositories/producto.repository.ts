@@ -114,6 +114,8 @@ export const obtenerProductoPorIdRepo = async (id: number) => {
         IDAtributo: number;
         IDValorAtributo: number;
         rol: string;
+        Atributo: string;
+        valor: string;
     }[]>();
 
     for (const atributo of atributosRows) {
@@ -123,7 +125,9 @@ export const obtenerProductoPorIdRepo = async (id: number) => {
         valores.push({
             IDAtributo: Number(atributo.IDAtributo),
             IDValorAtributo: Number(atributo.IDValorAtributo),
-            rol: String(atributo.rol)
+            rol: String(atributo.rol),
+            Atributo: String(atributo.Atributo ?? ""),
+            valor: String(atributo.valor ?? "")
         });
 
         atributosPorVariante.set(IDProductoVariante, valores);
@@ -134,6 +138,7 @@ export const obtenerProductoPorIdRepo = async (id: number) => {
         sku: String(variante.SKU),
         precio: Number(variante.precio),
         estado: Boolean(variante.estado),
+        stock: Number(variante.stock ?? 0),
         tieneImagen: Boolean(variante.tieneImagen),
         atributos: atributosPorVariante.get(Number(variante.IDProductoVariante)) ?? []
     }));

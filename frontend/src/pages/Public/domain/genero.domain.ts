@@ -16,6 +16,12 @@ export interface FiltroCatalogo {
 export const ETIQUETA_VER_TODO = 'Ver todo'
 
 /**
+ * "Todos" tampoco existe en el backend: es la opcion sintetica que limpia el
+ * filtro de genero para volver al catalogo completo.
+ */
+export const ETIQUETA_TODOS = 'Todos'
+
+/**
  * Solo estos generos despliegan el submenu de categorias. Se compara sobre el
  * nombre normalizado porque el backend devuelve los nombres con acentos y
  * mayusculas ("Hombres", "Mujeres", "Niños").

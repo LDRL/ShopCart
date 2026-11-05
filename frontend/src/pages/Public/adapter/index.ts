@@ -1,3 +1,5 @@
-export { categoriasAdapter, categoriasMenuAdapter } from './categorias.adapter'
-export type { CategoriasView } from './categorias.adapter'
+export { categoriasMenuAdapter } from './categorias.adapter'
 export { generosAdapter } from './generos.adapter'
+export { productoDetalleAdapter } from './productoDetalle.adapter'
+export { productosShopAdapter } from './productos.adapter'
+export type { ProductosView } from './productos.adapter'

@@ -19,7 +19,11 @@ import { Link as RouterLink } from 'react-router-dom'
 import { ThemeToggle } from '../../../components/ThemeToggle'
 import { PublicRoutes } from '../../../routes'
 import type { Categoria, FiltroCatalogo, Genero } from '../domain'
-import { ETIQUETA_VER_TODO, generoMuestraCategorias } from '../domain'
+import {
+  ETIQUETA_TODOS,
+  ETIQUETA_VER_TODO,
+  generoMuestraCategorias,
+} from '../domain'
 import { PublicMenuDrawer } from './PublicMenuDrawer'
 
 interface PublicHeaderProps {
@@ -133,16 +137,40 @@ export const PublicHeader = ({
               overflowX: 'auto',
             }}
           >
-            {isLoading
-              ? SKELETON_ROWS.map((row) => (
-                  <Box
-                    key={row}
-                    sx={{ display: 'flex', alignItems: 'center', px: 1 }}
-                  >
-                    <Skeleton width={72} height={24} />
-                  </Box>
-                ))
-              : visibles.map((genero) => {
+            {isLoading ? (
+              SKELETON_ROWS.map((row) => (
+                <Box
+                  key={row}
+                  sx={{ display: 'flex', alignItems: 'center', px: 1 }}
+                >
+                  <Skeleton width={72} height={24} />
+                </Box>
+              ))
+            ) : (
+              <>
+                <Button
+                  onClick={() =>
+                    seleccionar({ idGenero: null, idCategoria: null })
+                  }
+                  sx={{
+                    flexShrink: 0,
+                    px: { xs: 1, sm: 1.5 },
+                    minHeight: 64,
+                    borderRadius: 0,
+                    color:
+                      filtro.idGenero === null
+                        ? colorActivoTexto
+                        : colorTexto,
+                    bgcolor:
+                      filtro.idGenero === null ? colorActivo : 'transparent',
+                    whiteSpace: 'nowrap',
+                    '&:hover': { bgcolor: colorHover },
+                  }}
+                >
+                  {ETIQUETA_TODOS}
+                </Button>
+
+                {visibles.map((genero) => {
                   const conCategorias = generoMuestraCategorias(genero.nombre)
                   const seleccionado =
                     filtro.idGenero === genero.id && filtro.idCategoria === null
@@ -190,6 +218,8 @@ export const PublicHeader = ({
                     </Button>
                   )
                 })}
+              </>
+            )}
           </Box>
         )}
 

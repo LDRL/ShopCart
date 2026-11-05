@@ -231,6 +231,8 @@ interface AtributoRaw {
     IDAtributo: number;
     IDValorAtributo: number;
     rol: string;
+    Atributo: string;
+    valor: string;
 }
 
 interface VarianteRaw {
@@ -238,6 +240,7 @@ interface VarianteRaw {
     sku: string;
     precio: number;
     estado: boolean;
+    stock: number;
     tieneImagen: boolean;
     atributos: AtributoRaw[];
 }
@@ -249,8 +252,11 @@ interface ProductoRawResponse {
 }
 
 interface ProductoTransformado {
+    IDProducto: number;
     IDGenero: number;
     IDCategoria: number;
+    genero: string;
+    categoria: string;
     nombre: string;
     descripcion: string;
     precioBase: number;
@@ -260,6 +266,8 @@ interface ProductoTransformado {
         IDProductoVariante: number;
         sku: string;
         precio: number;
+        estado: boolean;
+        stock: number;
         atributos: AtributoRaw[];
     }[];
 
@@ -267,7 +275,8 @@ interface ProductoTransformado {
         campo: string;
         urlImagen: string;
         esPrincipal: boolean;
-        IDValorColor: number;
+        IDValorColor: number | null;
+        Color: string | null;
     }[];
 }
 
@@ -286,6 +295,8 @@ export const transformarProducto = (
         IDProductoVariante: variante.IDProductoVariante,
         sku: variante.sku,
         precio: variante.precio,
+        estado: variante.estado,
+        stock: variante.stock,
         atributos: variante.atributos
     }));
 
@@ -293,12 +304,21 @@ export const transformarProducto = (
         campo: `imgCamisa${index + 1}`,
         urlImagen: String(imagen.urlImagen),
         esPrincipal: Boolean(imagen.esPrincipal),
-        IDValorColor: Number(imagen.IDValorColor)
+        IDValorColor:
+            imagen.IDValorColor === null || imagen.IDValorColor === undefined
+                ? null
+                : Number(imagen.IDValorColor),
+        Color: imagen.Color === null || imagen.Color === undefined
+            ? null
+            : String(imagen.Color)
     }));
 
     return {
+        IDProducto: Number(producto.IDProducto),
         IDGenero: Number(producto.IDGenero),
         IDCategoria: Number(producto.IDCategoria),
+        genero: String(producto.Genero ?? ""),
+        categoria: String(producto.Categoria ?? ""),
         nombre: String(producto.nombre),
         descripcion: String(producto.descripcion ?? ""),
         precioBase: Number(producto.precioBase),

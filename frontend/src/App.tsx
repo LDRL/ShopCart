@@ -12,7 +12,7 @@ import { AuthGuard } from './guards'
 import { SessionExpiryListener } from './listeners/SessionExpiryListener'
 import { LoginPage } from './pages/Login'
 import { PrivatePage } from './pages/Private'
-import { PublicPage } from './pages/Public'
+import { ProductoDetallePage, PublicPage } from './pages/Public'
 import { store, useAppSelector } from './redux'
 import { PrivateRoutes, PublicRoutes, RoutesWithNotFound } from './routes'
 import { AppTheme } from './theme'
@@ -44,6 +44,10 @@ function App() {
                 />
                 <Route path={PublicRoutes.LOGIN} element={<LoginPage />} />
                 <Route path={PublicRoutes.PUBLIC} element={<PublicPage />} />
+                <Route
+                  path={`${PublicRoutes.PRODUCTO}/:id`}
+                  element={<ProductoDetallePage />}
+                />
                 <Route element={<AuthGuard />}>
                   <Route
                     path={`${PrivateRoutes.PRIVATE}/*`}

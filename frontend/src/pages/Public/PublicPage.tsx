@@ -5,26 +5,42 @@ import Button from '@mui/material/Button'
 import Container from '@mui/material/Container'
 import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
+import { useSearchParams } from 'react-router-dom'
 
 import { getApiErrorMessage } from '../../api/errors'
-import { CategoriasList } from './components/CategoriasList'
+import { ProductosGrid } from './components/ProductosGrid'
 import { PublicHeader } from './components/PublicHeader'
 import type { FiltroCatalogo } from './domain'
-import { useCategorias, useCategoriasMenu, useGeneros } from './hooks'
+import { PRODUCTOS_POR_PAGINA } from './domain'
+import { useCategoriasMenu, useGeneros, useProductos } from './hooks'
 
-const REGISTROS_POR_PAGINA = 10
+const parseId = (value: string | null): number | null => {
+  if (!value) return null
 
-const FILTRO_INICIAL: FiltroCatalogo = { idGenero: null, idCategoria: null }
+  const id = Number(value)
+
+  return Number.isSafeInteger(id) && id > 0 ? id : null
+}
+
+const filtroDesdeParams = (params: URLSearchParams): FiltroCatalogo => ({
+  idGenero: parseId(params.get('genero')),
+  idCategoria: parseId(params.get('categoria')),
+})
 
 export const PublicPage = () => {
+  const [searchParams, setSearchParams] = useSearchParams()
   const [pagina, setPagina] = useState(1)
   const [busqueda, setBusqueda] = useState('')
   const [buscar, setBuscar] = useState('')
-  const [filtro, setFiltro] = useState<FiltroCatalogo>(FILTRO_INICIAL)
+  const [filtro, setFiltro] = useState<FiltroCatalogo>(() =>
+    filtroDesdeParams(searchParams),
+  )
 
-  const { data, isLoading, isFetching, error } = useCategorias({
+  const { data, isLoading, isFetching, error } = useProductos({
     pagina,
-    registrosPorPagina: REGISTROS_POR_PAGINA,
+    registrosPorPagina: PRODUCTOS_POR_PAGINA,
+    idGenero: filtro.idGenero,
+    idCategoria: filtro.idCategoria,
     buscar,
   })
 
@@ -41,12 +57,30 @@ export const PublicPage = () => {
     (categoria) => categoria.id === filtro.idCategoria,
   )
 
-  const titulo = categoriaActiva?.nombre ?? generoActivo?.nombre ?? 'Categorías'
+  const titulo =
+    categoriaActiva?.nombre ?? generoActivo?.nombre ?? 'Todos los productos'
 
   const handleSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setPagina(1)
     setBuscar(busqueda.trim())
+  }
+
+  const handleSelect = (siguiente: FiltroCatalogo) => {
+    setFiltro(siguiente)
+    setPagina(1)
+
+    const params = new URLSearchParams()
+
+    if (siguiente.idGenero !== null) {
+      params.set('genero', String(siguiente.idGenero))
+    }
+
+    if (siguiente.idCategoria !== null) {
+      params.set('categoria', String(siguiente.idCategoria))
+    }
+
+    setSearchParams(params, { replace: true })
   }
 
   return (
@@ -56,10 +90,7 @@ export const PublicPage = () => {
         categorias={categoriasMenu}
         isLoading={generosLoading}
         filtro={filtro}
-        onSelect={(siguiente) => {
-          setFiltro(siguiente)
-          setPagina(1)
-        }}
+        onSelect={handleSelect}
       />
 
       <Container maxWidth="lg" sx={{ py: 5 }}>
@@ -93,7 +124,7 @@ export const PublicPage = () => {
             value={busqueda}
             onChange={(event) => setBusqueda(event.target.value)}
             sx={{ flex: '1 1 280px', maxWidth: 420 }}
-            slotProps={{ htmlInput: { 'aria-label': 'Buscar categoría' } }}
+            slotProps={{ htmlInput: { 'aria-label': 'Buscar producto' } }}
           />
           <Button type="submit" variant="contained">
             Buscar
@@ -102,12 +133,12 @@ export const PublicPage = () => {
 
         {error ? (
           <Alert severity="error" sx={{ mb: 2 }}>
-            {getApiErrorMessage(error, 'No se pudieron cargar las categorías')}
+            {getApiErrorMessage(error, 'No se pudieron cargar los productos')}
           </Alert>
         ) : null}
 
-        <CategoriasList
-          categorias={data?.categorias ?? []}
+        <ProductosGrid
+          productos={data?.productos ?? []}
           paginacion={data?.paginacion}
           isLoading={isLoading || isFetching}
           onPageChange={setPagina}

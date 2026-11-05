@@ -17,7 +17,11 @@ import { Link as RouterLink } from 'react-router-dom'
 import { ThemeToggle } from '../../../components/ThemeToggle'
 import { PublicRoutes } from '../../../routes'
 import type { Categoria, FiltroCatalogo, Genero } from '../domain'
-import { ETIQUETA_VER_TODO, generoMuestraCategorias } from '../domain'
+import {
+  ETIQUETA_TODOS,
+  ETIQUETA_VER_TODO,
+  generoMuestraCategorias,
+} from '../domain'
 
 interface PublicMenuDrawerProps {
   open: boolean
@@ -82,7 +86,18 @@ export const PublicMenuDrawer = ({
                 <Skeleton height={24} />
               </Box>
             ))
-          : visibles.map((genero) => {
+          : (
+              <>
+                <ListItemButton
+                  selected={filtro.idGenero === null}
+                  onClick={() =>
+                    seleccionar({ idGenero: null, idCategoria: null })
+                  }
+                >
+                  <ListItemText primary={ETIQUETA_TODOS} />
+                </ListItemButton>
+
+                {visibles.map((genero) => {
               const conCategorias = generoMuestraCategorias(genero.nombre)
               const expandido = expandidoId === genero.id
               const seleccionado =
@@ -175,6 +190,8 @@ export const PublicMenuDrawer = ({
                 </Box>
               )
             })}
+              </>
+            )}
       </List>
 
       <Divider />
