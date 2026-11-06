@@ -1,3 +1,5 @@
+export { FiltrosTienda } from './FiltrosTienda'
 export { ProductoCard } from './ProductoCard'
 export { ProductosGrid } from './ProductosGrid'
+export { PublicBreadcrumb } from './PublicBreadcrumb'
 export { PublicHeader } from './PublicHeader'

@@ -1,3 +1,4 @@
+import type { AtributoFiltroQuery } from '../domain'
 import type { Paginacion } from './categorias.models'
 
 export interface ProductoShopDto {
@@ -42,9 +43,11 @@ export interface ProductosShopResponse {
 }
 
 export interface ProductosShopQuery {
-  pagina: number
-  registrosPorPagina: number
+  // Ambos parametros o ninguno: si se omiten, el backend devuelve todo.
+  pagina?: number | null
+  registrosPorPagina?: number | null
   idGenero?: number | null
   idCategoria?: number | null
   buscar?: string
+  atributos?: AtributoFiltroQuery[]
 }

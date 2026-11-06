@@ -1,4 +1,6 @@
+export { useAtributosCatalogo } from './useAtributosCatalogo'
 export { useCategoriasMenu } from './useCategoriasMenu'
+export { useDebouncedValue } from './useDebouncedValue'
 export { useGeneros } from './useGeneros'
 export { useProductoDetalle } from './useProductoDetalle'
 export { useProductos } from './useProductos'

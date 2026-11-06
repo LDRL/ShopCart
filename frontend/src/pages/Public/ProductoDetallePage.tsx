@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded'
 import ImageNotSupportedRoundedIcon from '@mui/icons-material/ImageNotSupportedRounded'
 import Alert from '@mui/material/Alert'
 import Box from '@mui/material/Box'
@@ -19,12 +18,7 @@ import { getApiErrorMessage } from '../../api/errors'
 import { PublicRoutes } from '../../routes'
 import { PublicHeader } from './components/PublicHeader'
 import type { FiltroCatalogo } from './domain'
-import {
-  formatearPrecio,
-  imagenPrincipalDeColor,
-  imagenesDeColor,
-  tallasDeColor,
-} from './domain'
+import { formatearPrecio, imagenPrincipalDeColor, imagenesDeColor, tallasDeColor, } from './domain'
 import { useCategoriasMenu, useGeneros, useProductoDetalle } from './hooks'
 
 const FILTRO_VACIO: FiltroCatalogo = { idGenero: null, idCategoria: null }
@@ -46,14 +40,9 @@ export const ProductoDetallePage = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
 
-  const productoId = Number(id)
-  const [idColorSeleccionado, setIdColorSeleccionado] = useState<number | null>(
-    null,
-  )
-  const [imagenSeleccionada, setImagenSeleccionada] = useState<{
-    idColor: number | null
-    url: string
-  } | null>(null)
+  const productoId = Number(id);
+  const [idColorSeleccionado, setIdColorSeleccionado] = useState<number | null>( null );
+  const [imagenSeleccionada, setImagenSeleccionada] = useState<{ idColor: number | null, url: string } | null>(null);
 
   const { data: producto, isLoading, error } = useProductoDetalle(productoId)
   const { data: generos = [], isLoading: generosLoading } = useGeneros()
@@ -82,7 +71,7 @@ export const ProductoDetallePage = () => {
       : imagenPrincipal?.url ?? null
 
   return (
-    <Box sx={{ minHeight: '100svh', display: 'flex', flexDirection: 'column' }}>
+    <Box sx={{ minHeight: '100svh', display: 'flex', flexDirection: 'column', backgroundColor: '#fff' }}>
       <PublicHeader
         generos={generos}
         categorias={categorias}
@@ -91,7 +80,8 @@ export const ProductoDetallePage = () => {
         onSelect={(filtro) => navigate(urlTienda(filtro))}
       />
 
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container maxWidth={false} sx={{ maxWidth: 1500, py: 4 }}>
+        {/*
         <Button
           component={RouterLink}
           to={PublicRoutes.PUBLIC}
@@ -99,7 +89,7 @@ export const ProductoDetallePage = () => {
           sx={{ mb: 2 }}
         >
           Volver a la tienda
-        </Button>
+        </Button>*/}
 
         {isLoading ? (
           <Paper variant="outlined" sx={{ p: { xs: 2, md: 4 } }}>
@@ -139,7 +129,7 @@ export const ProductoDetallePage = () => {
         ) : (
           <Paper
             variant="outlined"
-            sx={{ overflow: 'hidden', borderRadius: 3 }}
+            sx={{ overflow: 'hidden', border: '0'}}
           >
             <Box
               sx={{
@@ -147,7 +137,8 @@ export const ProductoDetallePage = () => {
                 gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 1fr) minmax(0, 1fr)' },
               }}
             >
-              <Box sx={{ bgcolor: 'action.hover', p: { xs: 2, md: 4 } }}>
+              {/* Mostrar imagen producto lado izquierdo */}
+              <Box sx={{ bgcolor: '', p: { xs: 2, md: 4 } }}>
                 <Box
                   sx={{
                     aspectRatio: '1 / 1',
@@ -230,12 +221,10 @@ export const ProductoDetallePage = () => {
                 ) : null}
               </Box>
 
+              {/*Mostrar detalle del lado derecho del producto */}
+
               <Box sx={{ p: { xs: 2.5, md: 4 } }}>
-                <Typography variant="overline" color="primary">
-                  {[producto.genero, producto.categoria]
-                    .filter(Boolean)
-                    .join(' · ')}
-                </Typography>
+                
 
                 <Typography variant="h4" component="h1" sx={{ mt: 0.5 }}>
                   {producto.nombre}
@@ -281,8 +270,8 @@ export const ProductoDetallePage = () => {
                               aria-label={color.nombre}
                               aria-pressed={activo}
                               sx={{
-                                width: 40,
-                                height: 40,
+                                width: 25,
+                                height: 25,
                                 borderRadius: '50%',
                                 border: '1px solid',
                                 borderColor: 'divider',

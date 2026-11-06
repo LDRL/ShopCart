@@ -1,3 +1,4 @@
+export { atributosCatalogoAdapter } from './atributosCatalogo.adapter'
 export { categoriasMenuAdapter } from './categorias.adapter'
 export { generosAdapter } from './generos.adapter'
 export { productoDetalleAdapter } from './productoDetalle.adapter'

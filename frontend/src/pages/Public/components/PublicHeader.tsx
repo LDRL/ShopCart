@@ -35,7 +35,7 @@ interface PublicHeaderProps {
 }
 
 const SKELETON_ROWS = [0, 1, 2]
-const MAX_WIDTH = 1200
+const MAX_WIDTH = 1500
 
 const colorTexto = 'var(--sidebar-text)'
 const colorHover = 'var(--sidebar-hover-bg)'

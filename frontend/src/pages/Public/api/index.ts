@@ -1,3 +1,4 @@
+export { getAtributos, getValoresAtributos } from './atributos.api'
 export { getCategorias } from './categorias.api'
 export { getGeneros } from './generos.api'
 export { getProductoDetalle } from './productoDetalle.api'
